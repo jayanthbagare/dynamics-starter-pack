@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 1 · Iteration &amp; fixed points · Dynamics Starter Pack</title>
+  <meta name="description" content="Cobweb diagrams with a draggable seed, and a slope dial that shows why |f′(x*)| &lt; 1 means stable.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 1 · Strogatz §10.1–10.2</p>
+        <h1>Iteration &amp; fixed points</h1>
+        <p class="lede">
+          In Chapter 0 the calculator’s tape told the story one number at a time. Here is a picture
+          that shows the whole story at once, the cobweb, and a single number that predicts
+          how it ends: the slope at the fixed point.
+        </p>
+      </header>
+
+      <section id="presses" aria-labelledby="s11">
+        <h2 id="s11">From presses to a picture</h2>
+        <div class="prose">
+          <p>Below is the graph of <span class="tex">y = \cos x</span> and the dashed diagonal
+            <span class="tex">y = x</span>. The ▲ on the axis is where you start. Press
+            <strong>Step</strong> and follow the path. It alternates between two moves:</p>
+          <ul>
+            <li><strong>up (or down) to the curve</strong>: apply the rule, like pressing the button;</li>
+            <li><strong>across to the diagonal</strong>: the output becomes the next input.</li>
+          </ul>
+          <p>Drag the ▲ to start somewhere else. Hover over the time series to find each press on the cobweb.</p>
+        </div>
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="square" id="web1" aria-describedby="cap1"></canvas>
+            <div>
+              <canvas class="plot" id="ts1" role="img" aria-label="Time series of the same orbit"></canvas>
+              <div class="controls">
+                <button class="button primary" type="button" id="step" data-primary>Step</button>
+                <button class="button" type="button" id="play">Play</button>
+                <button class="button quiet" type="button" id="reset">Reset</button>
+              </div>
+              <p class="caption" id="cap1" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="diagonal" aria-labelledby="s12">
+        <h2 id="s12">Fixed points live on the diagonal</h2>
+        <div class="prose">
+          <p>A fixed point is a number the rule gives back unchanged: <span class="tex">f(x^*) = x^*</span>.
+            On the cobweb that means the curve meets the diagonal. That’s where the path stops
+            moving. Switch buttons, and drag the start across each fixed point.</p>
+        </div>
+        <div class="sim">
+          <div class="controls" style="margin-top:0">
+            <div class="choice" role="radiogroup" aria-label="Rule" id="map-choice"></div>
+          </div>
+          <div class="sim-grid" style="margin-top:var(--s-3)">
+            <canvas class="square" id="web2" aria-describedby="cap2"></canvas>
+            <div>
+              <p class="readout" id="cap2" aria-live="polite"></p>
+              <p class="caption" id="cap2b"></p>
+            </div>
+          </div>
+        </div>
+        <p class="aside">For x², start just below 1 and then just above it. The same fixed point
+          sends you two different ways: it’s hollow.</p>
+      </section>
+
+      <section id="slope-dial" aria-labelledby="s13">
+        <h2 id="s13">The slope dial</h2>
+        <div class="prose">
+          <p>Why does cos pull you in while x² pushes you off 1? Strip the question down to the simplest
+            possible rule: a straight line through a fixed point at 0.5. The only thing left to choose is its
+            <strong>slope</strong> <span class="tex">m</span>. Grab the ◆ knob on the line, or use the slider.</p>
+        </div>
+
+        <div id="predict-spiral"></div>
+
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="square" id="web3" aria-describedby="regime"></canvas>
+            <div>
+              <canvas class="plot" id="ts3" role="img" aria-label="Time series for the slope dial"></canvas>
+              <div class="controls" id="m-controls"></div>
+              <p class="readout" id="regime" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="predict-cycle"></div>
+
+        <div class="prose">
+          <p>Two things decide everything:</p>
+          <ul>
+            <li>the <strong>size</strong> of the slope: <span class="tex">|m| &lt; 1</span> shrinks the distance to
+              the fixed point every step, while <span class="tex">|m| &gt; 1</span> stretches it;</li>
+            <li>the <strong>sign</strong> of the slope: positive keeps you on one side (a staircase), while negative
+              flips you across each step (a spiral).</li>
+          </ul>
+          <p>At exactly <span class="tex">|m| = 1</span> the dial sits on the fence. The dot turns half-filled:
+            neither pulled in nor pushed away.</p>
+        </div>
+      </section>
+
+      <section id="zoom" aria-labelledby="s14">
+        <h2 id="s14">Zoom in: every curve is a line up close</h2>
+        <div class="prose">
+          <p>A real rule like cos isn’t a straight line. But zoom in far enough on a fixed point and
+            the curve becomes indistinguishable from its tangent line (dashed). The tangent’s slope,
+            <span class="tex">f'(x^*)</span>, is the slope dial’s <span class="tex">m</span>.</p>
+        </div>
+        <div class="sim">
+          <div class="controls" style="margin-top:0" id="zoom-controls">
+            <div class="choice" role="radiogroup" aria-label="Fixed point to zoom into" id="case-choice"></div>
+          </div>
+          <div class="sim-grid" style="margin-top:var(--s-3)">
+            <canvas class="square" id="web4" role="img" aria-describedby="zread"></canvas>
+            <div>
+              <p class="readout" id="zread" aria-live="polite"></p>
+              <p class="caption" id="znote"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>Near a fixed point, every rule behaves like the slope dial set to the curve’s own slope there.
+              So you don’t need to iterate to know the ending: read off the slope. Small slope, pulled in.
+              Steep slope, pushed away. Negative slope, you alternate sides.</p>
+            <p>That’s why cos alternated above and below 0.739 on the calculator tape: its slope there is negative.</p>
+          </div>
+          <div data-layer="picture">
+            <p>Crank the zoom to ×32 on any case. The curve and the dashed tangent merge, and the cobweb inside
+              looks exactly like the slope dial at <span class="tex">m = f'(x^*)</span>.</p>
+          </div>
+          <div data-layer="equation">
+            <p>Write the distance from the fixed point as <span class="tex">\eta_n = x_n - x^*</span>. Then</p>
+            <p class="tex-display">\eta_{n+1} = f(x^* + \eta_n) - x^* \approx f'(x^*)\,\eta_n,</p>
+            <p>so near <span class="tex">x^*</span> each step multiplies the distance by
+              <span class="tex">\lambda = f'(x^*)</span>, and</p>
+            <p class="tex-display">|\lambda| &lt; 1 \;\Rightarrow\; \text{stable}, \qquad |\lambda| &gt; 1 \;\Rightarrow\; \text{unstable}.</p>
+            <p>When <span class="tex">|\lambda| = 1</span> the linear approximation can’t decide, and the
+              neglected curvature does.</p>
+          </div>
+        </div>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
