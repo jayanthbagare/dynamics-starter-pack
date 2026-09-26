@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 8 · Lorenz: closing the loop · Dynamics Starter Pack</title>
+  <meta name="description" content="The Lorenz attractor, a chaotic waterwheel, ten thousand butterflies, and the one-dimensional map hidden inside a three-dimensional flow.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    canvas.space { display: block; width: 100%; height: 420px; touch-action: pan-y; cursor: grab; }
+    canvas.space:active { cursor: grabbing; }
+    canvas.wheel { display: block; width: 100%; aspect-ratio: 1 / 1; max-width: 24rem; }
+    body.presenter canvas.space { height: 560px; }
+    .legend3d { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-muted); margin: var(--s-1) 0 0; }
+    .journey { max-width: var(--measure); padding-left: 1.25em; }
+    .journey li { margin-bottom: var(--s-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 8 · Strogatz Ch 9</p>
+        <h1>Lorenz: closing the loop</h1>
+        <p class="lede">
+          In 1963 Edward Lorenz boiled weather down to three equations and found they could not be forecast.
+          This last chapter brings everything together: fixed points, instability, the butterfly effect, and
+          at the very end, a one-dimensional map hiding inside a three-dimensional flow.
+        </p>
+      </header>
+
+      <section id="meet" aria-labelledby="s81">
+        <h2 id="s81">Meet Lorenz</h2>
+        <div class="prose">
+          <p>The state is three numbers, <span class="tex">(x, y, z)</span>, so it lives in space rather than on a plane:</p>
+          <p class="tex-display">\dot x = \sigma(y - x), \qquad \dot y = r x - y - x z, \qquad \dot z = x y - b z,</p>
+          <p>with <span class="tex">\sigma = 10</span>, <span class="tex">b = 8/3</span>, and a dial <span class="tex">r</span> for how hard the system is driven.
+            Drag the view to turn it.</p>
+        </div>
+        <div id="predict-never"></div>
+        <div class="sim">
+          <canvas class="space" id="space"></canvas>
+          <p class="legend3d">○ unstable fixed points: the origin and the two wing centres C⁺ and C⁻ · drag to turn, wheel or pinch to zoom</p>
+          <canvas class="plot" id="ts-x" role="img" aria-label="x(t) for the trajectory" style="margin-top:var(--s-3)"></canvas>
+          <div class="controls" id="r-controls">
+            <button class="button quiet" type="button" id="restart">Restart</button>
+          </div>
+          <p class="readout" id="meet-read" aria-live="polite"></p>
+        </div>
+        <div id="predict-r20"></div>
+      </section>
+
+      <section id="wheel" aria-labelledby="s82">
+        <h2 id="s82">The waterwheel</h2>
+        <div class="prose">
+          <p>Here is a machine that obeys the same equations. Water pours steadily into the top of a wheel whose cups all leak. Heavy
+            cups on one side turn the wheel, which carries water round, which changes which side is heavy. The wheel’s state is
+            three numbers: its spin, and two kinds of imbalance (left–right and top–bottom). After rescaling, they are exactly
+            Lorenz’s <span class="tex">x, y, z</span>, and the dial r is how hard the water pours.</p>
+        </div>
+        <div id="predict-wheel"></div>
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="wheel" id="wheel-canvas"></canvas>
+            <div>
+              <canvas class="plot" id="ts-spin" role="img" aria-label="The wheel's spin over time"></canvas>
+              <p class="readout" id="wheel-read" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cloud" aria-labelledby="s83">
+        <h2 id="s83">Ten thousand butterflies</h2>
+        <div class="prose">
+          <p>Chapter 2 had two twins. Here are ten thousand, packed into a tiny ball on the attractor, all running the same rule.</p>
+        </div>
+        <div id="predict-cloud"></div>
+        <div class="sim" id="cloud-sim">
+          <canvas class="space" id="space-cloud"></canvas>
+          <div class="controls" id="cloud-controls">
+            <button class="button primary" type="button" id="release" data-primary>Release</button>
+            <button class="button" type="button" id="cloud-pause">Pause</button>
+            <button class="button quiet" type="button" id="cloud-reset">Reset the ball</button>
+          </div>
+          <canvas class="plot tall" id="ts-spread" role="img" aria-label="Spread of the cloud against time, on a log scale" style="margin-top:var(--s-3)"></canvas>
+          <div class="controls" id="ruler-controls"></div>
+          <p class="readout" id="cloud-read" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="map" aria-labelledby="s84">
+        <h2 id="s84">The map inside the flow</h2>
+        <div class="prose">
+          <p>Lorenz noticed something about <span class="tex">z(t)</span>: it climbs to a peak, falls, climbs to another peak, over and over.
+            What if the size of each peak decided the next one? Call the peaks <span class="tex">z_1, z_2, z_3, \dots</span> and plot each
+            one against the next.</p>
+        </div>
+        <div id="predict-tent"></div>
+        <div class="sim">
+          <canvas class="plot" id="ts-z" role="img" aria-label="z(t) with its peaks marked"></canvas>
+          <div class="sim-grid" style="margin-top:var(--s-3)">
+            <canvas class="square" id="web-peaks" aria-describedby="map-read"></canvas>
+            <div>
+              <div class="controls" style="margin-top:0">
+                <div class="choice" role="radiogroup" aria-label="Curve to iterate" id="curve-choice">
+                  <label><input type="radio" name="curve" value="none"><span>points only</span></label>
+                  <label><input type="radio" name="curve" value="fit"><span>fitted curve</span></label>
+                  <label><input type="radio" name="curve" value="tent"><span>Ch 3’s tent</span></label>
+                </div>
+              </div>
+              <p class="readout" id="map-read" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>A three-dimensional flow, and yet its peaks follow a simple one-dimensional rule, a map as in Chapter 1. Both branches of
+              the tent are steeper than 1, so by Chapter 1’s slope rule every fixed point, and every cycle, is hollow. Nothing can settle,
+              so the peaks never repeat. That’s the chaos, explained by a slope.</p>
+          </div>
+          <div data-layer="picture">
+            <p>Choose <em>fitted curve</em> and drag the ▲ on the cobweb. It never settles. Then compare with <em>Ch 3’s tent</em>: a sharp peak with
+              slopes steeper than 1, the hump that had no doubling cascade.</p>
+          </div>
+          <div data-layer="equation">
+            <p>The <strong>Lorenz map</strong> is <span class="tex">z_{n+1} = f(z_n)</span>. It satisfies <span class="tex">|f'(z)| &gt; 1</span> everywhere,
+              so for any cycle <span class="tex">z_1, \dots, z_p</span> the multiplier is</p>
+            <p class="tex-display">\left|\prod_{i=1}^{p} f'(z_i)\right| &gt; 1,</p>
+            <p>and every cycle is unstable. (Strictly, the map is a thin band rather than a curve, which is why its points have a little thickness.)</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="loop" aria-labelledby="s85">
+        <h2 id="s85">Closing the loop</h2>
+        <div class="prose">
+          <p>Look back at the path you’ve taken:</p>
+          <ol class="journey">
+            <li><a href="../00-prologue/">Pressing a button</a> over and over: state, rule, time, and a fixed point you found by iterating.</li>
+            <li><a href="../01-iteration/">The slope rule</a>: |slope| &lt; 1 pulls in, |slope| &gt; 1 pushes out.</li>
+            <li><a href="../02-butterfly/">The butterfly effect</a>: tiny differences doubling until the forecast fails.</li>
+            <li><a href="../03-bifurcation/">Doublings on the way to chaos</a>, at a rate (4.669) shared by every rounded hump.</li>
+            <li><a href="../04-flows-line/">From jumps to glides</a>, and Euler’s method turning a flow back into a map.</li>
+            <li><a href="../05-bifurcations-1d/">Tilting landscapes</a> where valleys appear, merge and vanish.</li>
+            <li><a href="../06-linear/">One map of every linear portrait</a>: trace and determinant.</li>
+            <li><a href="../07-phase-plane/">Nonlinear portraits</a>: a pendulum, tipping points, loops that make their own rhythm.</li>
+            <li>And here, a flow in three dimensions whose peaks obey a map like the first one you ever met.</li>
+          </ol>
+          <p>That’s the book’s arc, in the book’s vocabulary. You’re ready to read Strogatz.</p>
+        </div>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
