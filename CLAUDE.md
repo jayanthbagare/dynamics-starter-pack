@@ -97,7 +97,7 @@ Views receive a store and subscribe; they never own simulation state.
 - [x] M0 — repo, Pages enabled, live landing page
 - [x] M1 — core (store, integrate, layout), timeseries + cobweb views → Ch 0–1
 - [x] M2 — Ch 2
-- [ ] M3 — bifurcation view → Ch 3
+- [x] M3 — bifurcation view → Ch 3
 - [ ] M4 — vectorfield1d + landscape → Ch 4–5
 - [ ] M5 — tracedet + phase2d → Ch 6
 - [ ] M6 — Ch 7
@@ -118,3 +118,4 @@ Views receive a store and subscribe; they never own simulation state.
 - 2026-09-26 — M0 shipped: repo renamed to `dynamics-starter-pack`, Pages live at https://jayanthbagare.github.io/dynamics-starter-pack/ ; landing page with color tokens, light/dark/auto theme toggle, fixed-point legend, nine chapters listed as coming soon; README.
 - 2026-09-26 — M1 shipped: core (store + URL sync, integrate, layout, fixedpoints), views (timeseries, cobweb), ui (slider, predict-then-press, math-layers w/ vendored KaTeX 0.18.9, strogatz-lens, presenter mode), systems (cos, sqrt, square, linear); Ch 0 (calculator, starts, fates) and Ch 1 (cobweb, fixed points, slope dial, zoom) live.
 - 2026-09-26 — M2 shipped: Ch 2 live (twins with calm/chaotic toggle, gap on log scale with ruler → λ, "computer is a butterfly" aside, forecaster game with horizon-vs-digits fit, random-or-rule return maps); systems/logistic.js; timeseries gained log scale/twin style/ruler/markers, cobweb gained scatter points/twin path.
+- 2026-09-26 — M3 shipped: views/bifurcation.js (live density-shaded build, click/drag/keys to pick, box zoom in URL); systems/hump.js (presets + natural-spline drawn hump); Ch 3 live (dial with 2- and 4-cycle predictions, live diagram with window presets, mark-your-own doublings → δ, draw-your-own hump with auto δ via superstable parameters: 4.669 for rounded tops, 7.285 flat top, none for tent).
