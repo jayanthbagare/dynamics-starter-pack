@@ -31,7 +31,8 @@ export function makeHump(spec) {
     step: (x, { a }) => a * h(x),
     h,
     peak: c,                                                   // where the hump is highest
-    heights: Array.from({ length: NODES }, (_, k) => h(k / (NODES - 1))),
+    raw,                                                       // the curve as drawn (before scaling to peak 1)
+    heights: preset ? presetHeights(spec) : parseHeights(spec), // the 7 handle heights, as drawn
   };
 }
 
