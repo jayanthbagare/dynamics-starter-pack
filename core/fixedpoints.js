@@ -62,7 +62,7 @@ function bisect(g, lo, hi) {
 export function findZeros(f, [a, b], samples = 2000) {
   const h = (b - a) / samples;
   const xs = Array.from({ length: samples + 1 }, (_, i) => a + i * h);
-  const gs = xs.map(f);
+  const gs = xs.map((x) => f(x)); // not xs.map(f): map would pass the index as a second argument
   const scale = Math.max(1e-12, ...gs.map(Math.abs));
   const roots = [];
 
