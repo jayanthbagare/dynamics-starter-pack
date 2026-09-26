@@ -95,7 +95,7 @@ Views receive a store and subscribe; they never own simulation state.
 
 ## Milestones (each one ships to the live site)
 - [x] M0 — repo, Pages enabled, live landing page
-- [ ] M1 — core (store, integrate, layout), timeseries + cobweb views → Ch 0–1
+- [x] M1 — core (store, integrate, layout), timeseries + cobweb views → Ch 0–1
 - [ ] M2 — Ch 2
 - [ ] M3 — bifurcation view → Ch 3
 - [ ] M4 — vectorfield1d + landscape → Ch 4–5
@@ -116,3 +116,4 @@ Views receive a store and subscribe; they never own simulation state.
 ## Log
 <!-- date — milestone — note -->
 - 2026-09-26 — M0 shipped: repo renamed to `dynamics-starter-pack`, Pages live at https://jayanthbagare.github.io/dynamics-starter-pack/ ; landing page with color tokens, light/dark/auto theme toggle, fixed-point legend, nine chapters listed as coming soon; README.
+- 2026-09-26 — M1 shipped: core (store + URL sync, integrate, layout, fixedpoints), views (timeseries, cobweb), ui (slider, predict-then-press, math-layers w/ vendored KaTeX 0.18.9, strogatz-lens, presenter mode), systems (cos, sqrt, square, linear); Ch 0 (calculator, starts, fates) and Ch 1 (cobweb, fixed points, slope dial, zoom) live.
