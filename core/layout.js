@@ -20,7 +20,7 @@ export const chapters = [
   { n: 5, folder: '05-bifurcations-1d', title: 'Bifurcations in 1D flows',   live: true  },
   { n: 6, folder: '06-linear',          title: 'Linear systems',             live: true  },
   { n: 7, folder: '07-phase-plane',     title: 'The phase plane',            live: true  },
-  { n: 8, folder: '08-lorenz',          title: 'Lorenz: closing the loop',   live: false },
+  { n: 8, folder: '08-lorenz',          title: 'Lorenz: closing the loop',   live: true  },
 ];
 
 export const chapterURL = (c) => new URL(`chapters/${c.folder}/`, ROOT).href;
