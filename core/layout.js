@@ -14,7 +14,7 @@ export const ROOT = new URL('../', import.meta.url);
 export const chapters = [
   { n: 0, folder: '00-prologue',        title: 'State, rule, time',          live: true },
   { n: 1, folder: '01-iteration',       title: 'Iteration & fixed points',   live: true },
-  { n: 2, folder: '02-butterfly',       title: 'The butterfly effect',       live: false },
+  { n: 2, folder: '02-butterfly',       title: 'The butterfly effect',       live: true  },
   { n: 3, folder: '03-bifurcation',     title: 'Bifurcation & universality', live: false },
   { n: 4, folder: '04-flows-line',      title: 'Flows on the line',          live: false },
   { n: 5, folder: '05-bifurcations-1d', title: 'Bifurcations in 1D flows',   live: false },
