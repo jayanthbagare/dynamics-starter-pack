@@ -458,3 +458,12 @@ svg .flow { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 svg .flow-head { fill: var(--ink); }
 svg .fp-stable   { fill: var(--c-stable);   stroke: var(--c-stable);   stroke-width: 2; }
 svg .fp-unstable { fill: var(--bg);         stroke: var(--c-unstable); stroke-width: 2; }
+
+/* Live chapter cards: the whole card is the link */
+.chapter.live { position: relative; border-color: var(--ink-muted); }
+.chapter.live h3 a { color: inherit; text-decoration: none; }
+.chapter.live h3 a::after { content: ''; position: absolute; inset: 0; border-radius: var(--radius); }
+.chapter.live:hover { border-color: var(--c-trajectory); }
+.chapter.live:has(a:focus-visible) { outline: 2px solid var(--c-highlight); outline-offset: 2px; }
+.chapter.live h3 a:focus-visible { outline: none; }
+.status.ready { border-style: solid; border-color: var(--c-trajectory); color: var(--c-trajectory); }
