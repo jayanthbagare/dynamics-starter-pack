@@ -18,6 +18,7 @@
 import * as THREE from '../vendor/three/three.module.js';
 import { tokens, onThemeChange } from './canvas.js';
 import { findZeros } from '../core/fixedpoints.js';
+import { attachOrbit, placeCamera } from './orbit-camera.js';
 
 const NX = 90, NR = 50;          // surface resolution
 const SX = 2.2, SR = 1.6, SV = 1; // world size of the x, r and height directions
@@ -61,8 +62,6 @@ export function createLandscape(canvas, store, { select, yawKey, pitchKey, label
   let built = null;    // { key, vmin, vmax }
   let dirty = true;
 
-  // map model coordinates to world coordinates
-  const W = { x: 0, r: 0, v: 0 };
   function mapper(d, vmin, vmax) {
     const [x0, x1] = d.xRange, [r0, r1] = d.rRange;
     return {
@@ -189,16 +188,10 @@ export function createLandscape(canvas, store, { select, yawKey, pitchKey, label
     dirty = true;
   }
 
-  function placeCamera(s) {
-    const yaw = s[yawKey], pitch = s[pitchKey], dist = 7.2;
-    camera.position.set(dist * Math.cos(pitch) * Math.sin(yaw), dist * Math.sin(pitch), dist * Math.cos(pitch) * Math.cos(yaw));
-    camera.lookAt(0, 0.25, 0);
-  }
-
   function render() {
     const d = select(store.get());
     if (!built || built.key !== d.key) buildSurface(d);
-    placeCamera(store.get());
+    placeCamera(camera, store.get(), { yawKey, pitchKey, distance: 7.2, target: [0, 0.25, 0] });
     buildDynamic(d);
     renderer.render(scene, camera);
     dirty = false;
@@ -217,33 +210,7 @@ export function createLandscape(canvas, store, { select, yawKey, pitchKey, label
   onThemeChange(() => { applyColours(); render(); });
   store.subscribe(render);
 
-  // --- turning the view ------------------------------------------------------
-
-  let drag = null;
-  const turn = (dyaw, dpitch) => {
-    const s = store.get();
-    store.set({
-      [yawKey]: +(s[yawKey] + dyaw).toFixed(3),
-      [pitchKey]: +Math.min(1.35, Math.max(0.12, s[pitchKey] + dpitch)).toFixed(3),
-    });
-  };
-  canvas.addEventListener('pointerdown', (e) => { drag = [e.clientX, e.clientY]; canvas.setPointerCapture(e.pointerId); });
-  canvas.addEventListener('pointermove', (e) => {
-    if (!drag) return;
-    turn(-(e.clientX - drag[0]) * 0.008, (e.clientY - drag[1]) * 0.006);
-    drag = [e.clientX, e.clientY];
-  });
-  canvas.addEventListener('pointerup', () => { drag = null; });
-  canvas.addEventListener('pointercancel', () => { drag = null; });
-  canvas.tabIndex = 0;
-  canvas.setAttribute('role', 'img');
-  canvas.setAttribute('aria-label', `${label}. Drag, or use the arrow keys, to turn the view.`);
-  canvas.addEventListener('keydown', (e) => {
-    const k = { ArrowLeft: [0.08, 0], ArrowRight: [-0.08, 0], ArrowUp: [0, 0.06], ArrowDown: [0, -0.06] }[e.key];
-    if (!k) return;
-    e.preventDefault();
-    turn(...k);
-  });
+  attachOrbit(canvas, store, { yawKey, pitchKey, label });
 
   return { redraw: render };
 }
