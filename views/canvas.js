@@ -58,7 +58,7 @@ export function fmtTick(t) {
 }
 
 // Frame, grid ticks and labels for a plot area.
-export function drawAxes(ctx, T, { x, y, xTicks, yTicks, xLabel, yLabel, box, yFormat = fmtTick }) {
+export function drawAxes(ctx, T, { x, y, xTicks, yTicks, xLabel, yLabel, box, xFormat = fmtTick, yFormat = fmtTick }) {
   ctx.save();
   ctx.strokeStyle = T.rule; ctx.lineWidth = 1;
   ctx.strokeRect(box.left + 0.5, box.top + 0.5, box.right - box.left, box.bottom - box.top);
@@ -68,7 +68,7 @@ export function drawAxes(ctx, T, { x, y, xTicks, yTicks, xLabel, yLabel, box, yF
   for (const t of xTicks) {
     const px = x(t);
     ctx.beginPath(); ctx.moveTo(px, box.bottom); ctx.lineTo(px, box.bottom + 4); ctx.stroke();
-    ctx.fillText(fmtTick(t), px, box.bottom + 6);
+    ctx.fillText(xFormat(t), px, box.bottom + 6);
   }
   ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
   for (const t of yTicks) {
