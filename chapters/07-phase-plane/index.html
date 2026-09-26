@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 7 · The phase plane · Dynamics Starter Pack</title>
+  <meta name="description" content="A pendulum and its portrait; zooming in to linearize; competing species and tipping points; limit cycles; and a Hopf bifurcation, where a loop is born.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    canvas.pend { display: block; width: 100%; aspect-ratio: 1 / 1; max-width: 26rem; touch-action: none; cursor: grab; }
+    canvas.td-small { display: block; width: 100%; aspect-ratio: 4 / 3; max-width: 26rem; }
+    canvas.dia { display: block; width: 100%; height: 220px; }
+    .caution { border-left: 3px solid var(--c-unstable); padding-left: var(--s-3); max-width: var(--measure); }
+    .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); align-items: start; }
+    @media (max-width: 56rem) { .trio { grid-template-columns: minmax(0, 1fr); } }
+    .panel-label { font-family: var(--font-mono); font-size: var(--fs-small); color: var(--ink-muted); margin: 0 0 var(--s-1); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 7 · Strogatz Ch 6–8</p>
+        <h1>The phase plane</h1>
+        <p class="lede">
+          Chapter 6’s flows were linear, so their portraits were simple. Real systems are nonlinear. They can
+          have several fixed points, loops, and boundaries that decide your fate. This chapter reads those
+          portraits, starting with the one object everyone knows: a pendulum.
+        </p>
+      </header>
+
+      <section id="pendulum" aria-labelledby="s71">
+        <h2 id="s71">A pendulum and its portrait</h2>
+        <div class="prose">
+          <p>The state of a pendulum is two numbers: its angle θ and its angular velocity ω. So its whole life is a
+            path in the (θ, ω) plane. The angle wraps around (θ = π and −π are the same, straight up), so the left and
+            right edges of the portrait are glued together. Drag the bob and let go, or click the portrait to set a state.</p>
+        </div>
+        <div id="predict-swing"></div>
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="pend" id="pend"></canvas>
+            <canvas class="square" id="p-pend"></canvas>
+          </div>
+          <div class="controls" id="pend-controls">
+            <label class="caption" style="margin:0"><input type="checkbox" id="energy"> energy contours</label>
+            <button class="button quiet" type="button" id="stop">Hold still</button>
+          </div>
+          <p class="readout" id="pend-read" aria-live="polite"></p>
+        </div>
+        <div id="predict-over"></div>
+        <p class="aside">The highlighted curve, the <strong>separatrix</strong>, runs from upside-down to upside-down. Inside it the pendulum
+          swings back and forth; outside it goes over the top and keeps going. Add damping and every loop becomes a spiral
+          into the bottom: Chapter 6’s center turning into a stable spiral.</p>
+      </section>
+
+      <section id="zoom" aria-labelledby="s72">
+        <h2 id="s72">Zoom in: linearization</h2>
+        <div class="prose">
+          <p>Near a fixed point, a nonlinear flow looks linear, just as a curve looks straight under a magnifier. On the left is the
+            real pendulum zoomed in on a fixed point. On the right is its <strong>linearization</strong>, the Chapter 6 system with
+            the same slopes. On the far right is where that linear system sits on Chapter 6’s map.</p>
+        </div>
+        <div id="predict-top"></div>
+        <div class="sim">
+          <div class="controls" style="margin-top:0" id="zoom-controls">
+            <div class="choice" role="radiogroup" aria-label="Fixed point" id="fp-choice">
+              <label><input type="radio" name="fp" value="bottom"><span>hanging down</span></label>
+              <label><input type="radio" name="fp" value="top"><span>upside down</span></label>
+            </div>
+          </div>
+          <div class="trio" style="margin-top:var(--s-3)">
+            <div><p class="panel-label">nonlinear (the real pendulum)</p><canvas class="square" id="p-nl"></canvas></div>
+            <div><p class="panel-label">linearized</p><canvas class="square" id="p-lin"></canvas></div>
+            <div><p class="panel-label">on Chapter 6’s map</p><canvas class="td-small" id="td-lin"></canvas></div>
+          </div>
+          <p class="readout" id="lin-read" aria-live="polite"></p>
+        </div>
+        <p class="caution"><strong>Careful with centers.</strong> Linearization settles saddles, nodes and spirals. A <em>center</em> is a
+          knife edge (Chapter 6), and the neglected nonlinear terms can tip it into a slow spiral either way. The pendulum
+          really does keep its loops, but for a different reason: with no damping it conserves energy, and each loop is an
+          energy contour.</p>
+        <div class="layers">
+          <div data-layer="intuition"><p>Every smooth flow is linear up close. So near each fixed point, Chapter 6’s map tells you
+            what you’ll see, except in the borderline cases on its special lines.</p></div>
+          <div data-layer="picture"><p>Raise the zoom until the two portraits are indistinguishable. Try it on both fixed points.</p></div>
+          <div data-layer="equation">
+            <p>Write the distance from the fixed point as <span class="tex">\boldsymbol\eta = \mathbf x - \mathbf x^*</span>. Then</p>
+            <p class="tex-display">\dot{\boldsymbol\eta} \approx J\,\boldsymbol\eta, \qquad J = \begin{pmatrix} \partial f/\partial x &amp; \partial f/\partial y \\ \partial g/\partial x &amp; \partial g/\partial y \end{pmatrix}_{\mathbf x^*}.</p>
+            <p>For the pendulum, <span class="tex">J = \begin{pmatrix} 0 &amp; 1 \\ -\tfrac gL\cos\theta^* &amp; -b \end{pmatrix}</span>: a center (or stable
+              spiral) at the bottom, a saddle at the top.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="competition" aria-labelledby="s73">
+        <h2 id="s73">Competition: nullclines and a tipping point</h2>
+        <div class="prose">
+          <p>Two species share one resource. Each grows on its own until it fills its space, and each crowds the other:</p>
+          <p class="tex-display">\dot x = x(1 - x - a\,y), \qquad \dot y = y(0.8 - y - c\,x).</p>
+          <p>The dashed curves are <strong>nullclines</strong>: on one, x isn’t changing (ẋ = 0); on the other, y isn’t (ẏ = 0). Fixed points
+            are where they cross. Click to start trajectories.</p>
+        </div>
+        <div id="predict-tip"></div>
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="square" id="p-comp"></canvas>
+            <div>
+              <div class="controls" style="margin-top:0" id="comp-presets"></div>
+              <div class="controls" id="comp-controls"></div>
+              <p class="readout" id="comp-read" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cycle" aria-labelledby="s74">
+        <h2 id="s74">Limit cycles</h2>
+        <div class="prose">
+          <p>A system that pushes small motions up and drags large motions down (like a heart cell, or an old valve circuit)
+            settles into a rhythm of its own. Here it is as the <strong>van der Pol oscillator</strong>,
+            <span class="tex">\ddot x - \mu(1 - x^2)\dot x + x = 0</span>.</p>
+        </div>
+        <div id="predict-cycle"></div>
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="square" id="p-vdp"></canvas>
+            <div>
+              <canvas class="plot" id="ts-vdp" role="img" aria-label="x(t) for the first trajectory"></canvas>
+              <div class="controls" id="vdp-controls"></div>
+              <p class="readout" id="vdp-read" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+        <div id="predict-relax"></div>
+        <p class="aside">Compare Chapter 6’s center: a whole family of loops, each one ignoring its neighbours. A limit cycle is a
+          <em>single</em>, isolated loop that pulls its neighbours in. It’s the shape of a sustained, self-made rhythm.</p>
+      </section>
+
+      <section id="hopf" aria-labelledby="s75">
+        <h2 id="s75">Hopf: a loop is born</h2>
+        <div class="prose">
+          <p>How does a rhythm start? Turn a dial μ on a system that spirals into a fixed point. At μ = 0 the spiral stops pulling in,
+            and a small loop appears. In polar coordinates the system is <span class="tex">\dot r = \mu r - r^3,\ \dot\theta = \omega</span>.</p>
+        </div>
+        <div id="predict-hopf"></div>
+        <div class="sim">
+          <div class="trio">
+            <div><p class="panel-label">portrait</p><canvas class="square" id="p-hopf"></canvas></div>
+            <div><p class="panel-label">loop radius against μ</p><canvas class="dia" id="dia-hopf"></canvas></div>
+            <div><p class="panel-label">eigenvalues on Chapter 6’s map</p><canvas class="td-small" id="td-hopf"></canvas></div>
+          </div>
+          <div class="controls" id="hopf-controls"></div>
+          <p class="readout" id="hopf-read" aria-live="polite"></p>
+        </div>
+        <p class="aside">This is the <strong>supercritical</strong> Hopf: the loop grows smoothly from nothing. In the <em>subcritical</em> version, the
+          loop is unstable and the system jumps to a large oscillation, with hysteresis just like Chapter 5. See the lens for where to read about it.</p>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
