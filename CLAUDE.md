@@ -101,7 +101,7 @@ Views receive a store and subscribe; they never own simulation state.
 - [x] M4 — vectorfield1d + landscape → Ch 4–5
 - [x] M5 — tracedet + phase2d → Ch 6
 - [x] M6 — Ch 7
-- [ ] M7 — scene3d → Ch 8
+- [x] M7 — scene3d → Ch 8
 
 ## Working rules for Claude Code
 - **Plan before executing.** For each milestone, propose a plan and wait for approval.
@@ -122,3 +122,4 @@ Views receive a store and subscribe; they never own simulation state.
 - 2026-09-26 — M4 shipped: vendored three.js r186; core/spline.js (shared), findZeros for flows; views vectorfield1d, landscape (3D V(x;r) with slice, balls, floor diagram), timeseries continuous time, bifurcation branches mode; Ch 4 live (phase line, drag f(x), Euler = logistic map with r = 1 + h) and Ch 5 live (sticky 3D stage; saddle-node + bottleneck, transcritical, pitchfork with tilt, subcritical hysteresis). Store URL writes now throttled.
 - 2026-09-26 — M5 shipped: systems/linear2d.js (eigen, classify, spring form); views phase2d (field, trajectories, eigen lines, particle cloud that idles off-screen) and tracedet (regions, snapping, thumbnails); Ch 6 live with the eigenvector primer (audience LA comfort still TBD, so primer included, open by default), uncoupled rates, eigenvector highways, and the trace–determinant map driving a spring. Centers drawn half-filled (neutral).
 - 2026-09-26 — M6 shipped: Ch 7 live (pendulum ↔ portrait on a cylinder with separatrix and damping, linearization zoom with Ch 6 map, competition with nullclines and separatrix, van der Pol limit cycle and relaxation, Hopf with radius diagram and eigenvalue point on the τ–Δ map). systems: pendulum (contract form), competition, vanderpol, hopf; core: findFixedPoints2D + Jacobian; phase2d: level sets, curves, wrap, live state; canvases skip redraws off-screen.
+- 2026-09-26 — M7 shipped, v1 complete: systems/lorenz.js; views/scene3d.js (10k-point cloud, fading trajectory, markers) and shared views/orbit-camera.js; Ch 8 live (Lorenz in 3D with r dial, waterwheel drawn from the Lorenz state, 10,000-particle ball with log-scale spread and ruler at 60 fps, peak-to-peak Lorenz map with cobweb and Ch 3 tent, closing-the-loop recap). README updated for v1.
