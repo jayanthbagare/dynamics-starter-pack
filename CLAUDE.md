@@ -1,0 +1,117 @@
+# Dynamics Starter Pack
+
+An interactive, visual introduction to dynamical systems, built as a **starter pack for students
+before they read Steven Strogatz, _Nonlinear Dynamics and Chaos_**. Hosted on GitHub Pages.
+
+The job of this site: make Strogatz Ch 1–10 feel familiar before students open the book.
+Maps-first intuition (after Feldman's SFI course), then a hinge into Strogatz's geometric,
+flows-first vocabulary and notation.
+
+## Audience
+Students taught by the author (Jayanth). Assume one-variable calculus.
+Linear algebra (eigenvalues) comfort: **TBD** — if shaky, Ch 6 opens with a visual primer
+(a matrix transforming a grid; eigenvectors stay on their own lines).
+
+## Design principles (apply to every chapter)
+1. **Touch before formula.** Drag first, name second, equation third. Math sits behind a
+   three-layer toggle: intuition / picture / equation.
+2. **Predict, then press.** Before each reveal, the student commits to a guess
+   (e.g. converges / oscillates / explodes). Use the shared `predict-then-press` widget.
+3. **Linked views.** One store drives all views of a system; moving any control updates all.
+4. **Readable source.** A student opening any system file should find a `step()` or `f()`
+   of a few lines. Clarity beats cleverness everywhere in `/systems`.
+
+## Notation and visual conventions (match Strogatz)
+- Flows: `ẋ = f(x)`; fixed points `x*`; maps: `x_{n+1} = f(x_n)`.
+- **Stable fixed point = filled dot. Unstable = hollow dot. Half-stable = half-filled.**
+  Use from Ch 1 onward, everywhere.
+- Consistent color semantics across the site (define once as CSS custom properties):
+  trajectory, stable, unstable, parameter, highlight.
+- Support light and dark themes.
+
+## Visual direction
+Calm and paper-like: generous whitespace, serif body text, monospace for numbers and code,
+restrained palette where color carries meaning. Simulations are the visual heroes; chrome
+stays quiet. No stock imagery, no decorative gradients.
+
+## v1 chapters
+| Ch | Folder | Title | Signature interaction | Strogatz |
+|---|---|---|---|---|
+| 0 | 00-prologue | State, rule, time | Press cos repeatedly → 0.739; also √ and x² | Ch 1 |
+| 1 | 01-iteration | Iteration & fixed points | Cobweb, draggable seed; drag slope through magnitude 1 | §10.1–10.2 |
+| 2 | 02-butterfly | The butterfly effect | Twin seeds 0.4 vs 0.4000001; log-scale separation; prediction game; random-vs-chaotic return map | §9.3, §10.5 |
+| 3 | 03-bifurcation | Bifurcation & universality | Diagram builds live, click column → cobweb; draw-your-own hump → δ≈4.669 | §10.2–10.7 |
+| 4 | 04-flows-line | Flows on the line (hinge) | Drag f(x); arrows and x* update on the axis; Euler as iteration | Ch 2 |
+| 5 | 05-bifurcations-1d | Bifurcations in 1D flows | Tilting landscape; saddle-node, transcritical, pitchfork normal forms; hysteresis | Ch 3 |
+| 6 | 06-linear | Linear systems | Drag point on trace–determinant plane; phase portrait morphs | Ch 5 |
+| 7 | 07-phase-plane | The phase plane | Pendulum ↔ portrait; linearization zoom; competition; limit cycle; Hopf | Ch 6–8 |
+| 8 | 08-lorenz | Lorenz: closing the loop | 10k-particle cloud; waterwheel; peak-to-peak map → tent map | Ch 9 |
+
+Out of scope for v1 (do not build): fractals, Mandelbrot, magnetic pendulum, pattern formation.
+
+## Every chapter ends with a "Strogatz lens" panel
+Sections to read next, notation mapping, and **three original exercises** that use the sims.
+**Never reproduce Strogatz's text, figures, or exercises** — cite section numbers only.
+
+## Architecture
+- **No build step.** Plain HTML + native ES modules, served directly from `main` by GitHub Pages.
+  No npm, no bundler, no framework. A student must be able to fork and open it as-is.
+- Vendor pinned copies of three.js and KaTeX into `/vendor` (no CDN at runtime).
+- Canvas 2D for 2D views; three.js for landscape and Lorenz. Web Workers only if profiling demands.
+- All relative paths must work under the Pages subpath (`/<repo-name>/`).
+
+### Layout
+```
+/index.html                 landing + chapter index
+/chapters/NN-name/index.html
+/core/store.js              params + state, subscribe(), URL query sync
+/core/integrate.js          euler, rk4
+/core/layout.js             shared header/nav/footer include
+/systems/*.js               one file per system
+/views/*.js                 timeseries, cobweb, bifurcation, vectorfield1d, landscape,
+                            phase2d, tracedet, scene3d
+/ui/*.js                    slider, predict-then-press, presenter-mode, strogatz-lens,
+                            math-layers toggle
+/styles/base.css            tokens (colors, type, spacing), themes
+/vendor/                    three.js, KaTeX
+```
+
+### System contract
+```js
+// map
+export const logistic = { kind: 'map', params: { r: 3.2 },
+  step: (x, { r }) => r * x * (1 - x) };
+// flow
+export const pendulum = { kind: 'flow', dim: 2, params: { g: 9.8, L: 1, b: 0 },
+  f: ([θ, ω], { g, L, b }) => [ω, -(g / L) * Math.sin(θ) - b * ω] };
+```
+Views receive a store and subscribe; they never own simulation state.
+
+### Cross-cutting features
+- **URL state:** every sim's params/initial state sync to the query string
+  (`?r=3.8284&x0=0.2`), so a link reproduces an exact setting.
+- **Presenter mode:** key `P` toggles large type, hides prose, keyboard-driven sliders.
+- Accessible: keyboard-operable controls, labels on sliders, never color alone for meaning.
+
+## Milestones (each one ships to the live site)
+- [ ] M0 — repo, Pages enabled, live landing page
+- [ ] M1 — core (store, integrate, layout), timeseries + cobweb views → Ch 0–1
+- [ ] M2 — Ch 2
+- [ ] M3 — bifurcation view → Ch 3
+- [ ] M4 — vectorfield1d + landscape → Ch 4–5
+- [ ] M5 — tracedet + phase2d → Ch 6
+- [ ] M6 — Ch 7
+- [ ] M7 — scene3d → Ch 8
+
+## Working rules for Claude Code
+- **Plan before executing.** For each milestone, propose a plan and wait for approval.
+- One milestone per session. Don't start the next milestone unprompted.
+- Small, meaningful commits (`core: add store with URL sync`, `ch1: cobweb interaction`).
+  Push at the end of each milestone.
+- Before declaring a milestone done: serve locally (`python3 -m http.server`), check every
+  page loads with no console errors, check links under the Pages subpath, test light/dark.
+- When a milestone ships, tick its box above and add a line to the log below.
+- Do not add chapters, systems, or features that aren't in this file. Propose them instead.
+
+## Log
+<!-- date — milestone — note -->
