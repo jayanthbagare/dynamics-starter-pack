@@ -22,7 +22,7 @@
 
 import { setupCanvas, tokens, scale, ticks, drawAxes, drawFixedPoint } from './canvas.js';
 
-export function createCobweb(canvas, store, { select, seedKey, seedRange = null, slope = null, label = 'Seed x₀' }) {
+export function createCobweb(canvas, store, { select, seedKey, seedRange = null, slope = null, label = 'Seed x₀', axisLabels = ['xₙ', 'xₙ₊₁'] }) {
   let geom = null;
   let drag = null; // 'seed' | 'slope'
 
@@ -39,7 +39,7 @@ export function createCobweb(canvas, store, { select, seedKey, seedRange = null,
     geom = { x, y, box, lo, hi, knob: null, seedPx: x(seed) };
 
     ctx.clearRect(0, 0, w, h);
-    drawAxes(ctx, T, { x, y, box, xTicks: ticks(lo, hi, 5), yTicks: ticks(lo, hi, 5), xLabel: 'xₙ', yLabel: 'xₙ₊₁' });
+    drawAxes(ctx, T, { x, y, box, xTicks: ticks(lo, hi, 5), yTicks: ticks(lo, hi, 5), xLabel: axisLabels[0], yLabel: axisLabels[1] });
 
     ctx.save();
     ctx.beginPath(); ctx.rect(box.left, box.top, side, side); ctx.clip();
