@@ -98,7 +98,7 @@ Views receive a store and subscribe; they never own simulation state.
 - [x] M1 — core (store, integrate, layout), timeseries + cobweb views → Ch 0–1
 - [x] M2 — Ch 2
 - [x] M3 — bifurcation view → Ch 3
-- [ ] M4 — vectorfield1d + landscape → Ch 4–5
+- [x] M4 — vectorfield1d + landscape → Ch 4–5
 - [ ] M5 — tracedet + phase2d → Ch 6
 - [ ] M6 — Ch 7
 - [ ] M7 — scene3d → Ch 8
@@ -119,3 +119,4 @@ Views receive a store and subscribe; they never own simulation state.
 - 2026-09-26 — M1 shipped: core (store + URL sync, integrate, layout, fixedpoints), views (timeseries, cobweb), ui (slider, predict-then-press, math-layers w/ vendored KaTeX 0.18.9, strogatz-lens, presenter mode), systems (cos, sqrt, square, linear); Ch 0 (calculator, starts, fates) and Ch 1 (cobweb, fixed points, slope dial, zoom) live.
 - 2026-09-26 — M2 shipped: Ch 2 live (twins with calm/chaotic toggle, gap on log scale with ruler → λ, "computer is a butterfly" aside, forecaster game with horizon-vs-digits fit, random-or-rule return maps); systems/logistic.js; timeseries gained log scale/twin style/ruler/markers, cobweb gained scatter points/twin path.
 - 2026-09-26 — M3 shipped: views/bifurcation.js (live density-shaded build, click/drag/keys to pick, box zoom in URL); systems/hump.js (presets + natural-spline drawn hump); Ch 3 live (dial with 2- and 4-cycle predictions, live diagram with window presets, mark-your-own doublings → δ, draw-your-own hump with auto δ via superstable parameters: 4.669 for rounded tops, 7.285 flat top, none for tent).
+- 2026-09-26 — M4 shipped: vendored three.js r186; core/spline.js (shared), findZeros for flows; views vectorfield1d, landscape (3D V(x;r) with slice, balls, floor diagram), timeseries continuous time, bifurcation branches mode; Ch 4 live (phase line, drag f(x), Euler = logistic map with r = 1 + h) and Ch 5 live (sticky 3D stage; saddle-node + bottleneck, transcritical, pitchfork with tilt, subcritical hysteresis). Store URL writes now throttled.
