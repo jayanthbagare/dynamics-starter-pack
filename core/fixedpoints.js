@@ -96,3 +96,42 @@ function minimise(g, lo, hi) {
   }
   return (lo + hi) / 2;
 }
+
+// --- flows in the plane: ẋ = f([x, y]) ---------------------------------------------------
+//
+//   findFixedPoints2D(([x, y]) => [y, -Math.sin(x)], [-4, 4, -3, 3])
+//     → [{ x: 0, y: 0, J, tau, det }, { x: 3.14159…, y: 0, … }, …]
+//
+// Newton's method from a grid of starting points; duplicates merged. J is the Jacobian (numerical),
+// and tau / det are its trace and determinant (classify them with systems/linear2d.js).
+
+export function jacobian(f, [x, y], h = 1e-6) {
+  const [fxp, gxp] = f([x + h, y]), [fxm, gxm] = f([x - h, y]);
+  const [fyp, gyp] = f([x, y + h]), [fym, gym] = f([x, y - h]);
+  return { a: (fxp - fxm) / (2 * h), b: (fyp - fym) / (2 * h), c: (gxp - gxm) / (2 * h), d: (gyp - gym) / (2 * h) };
+}
+
+export function findFixedPoints2D(f, [x0, x1, y0, y1], n = 9) {
+  const found = [];
+  const tol = 1e-4 * Math.max(x1 - x0, y1 - y0);
+  for (let i = 0; i <= n; i++) {
+    for (let j = 0; j <= n; j++) {
+      let p = [x0 + (i / n) * (x1 - x0), y0 + (j / n) * (y1 - y0)];
+      for (let k = 0; k < 50; k++) {
+        const [u, v] = f(p), J = jacobian(f, p);
+        const D = J.a * J.d - J.b * J.c;
+        if (!Number.isFinite(D) || Math.abs(D) < 1e-14) break;
+        const step = [(J.d * u - J.b * v) / D, (-J.c * u + J.a * v) / D];
+        p = [p[0] - step[0], p[1] - step[1]];
+        if (Math.hypot(...step) < 1e-12) break;
+      }
+      const [u, v] = f(p);
+      const inside = p[0] >= x0 - tol && p[0] <= x1 + tol && p[1] >= y0 - tol && p[1] <= y1 + tol;
+      if (!p.every(Number.isFinite) || Math.hypot(u, v) > 1e-9 || !inside) continue;
+      if (found.some((q) => Math.hypot(q.x - p[0], q.y - p[1]) < tol)) continue;
+      const J = jacobian(f, p);
+      found.push({ x: p[0], y: p[1], J, tau: J.a + J.d, det: J.a * J.d - J.b * J.c });
+    }
+  }
+  return found.sort((a, b) => a.x - b.x || a.y - b.y);
+}
