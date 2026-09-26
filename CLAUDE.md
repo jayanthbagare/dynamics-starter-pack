@@ -94,7 +94,7 @@ Views receive a store and subscribe; they never own simulation state.
 - Accessible: keyboard-operable controls, labels on sliders, never color alone for meaning.
 
 ## Milestones (each one ships to the live site)
-- [ ] M0 — repo, Pages enabled, live landing page
+- [x] M0 — repo, Pages enabled, live landing page
 - [ ] M1 — core (store, integrate, layout), timeseries + cobweb views → Ch 0–1
 - [ ] M2 — Ch 2
 - [ ] M3 — bifurcation view → Ch 3
@@ -115,3 +115,4 @@ Views receive a store and subscribe; they never own simulation state.
 
 ## Log
 <!-- date — milestone — note -->
+- 2026-09-26 — M0 shipped: repo renamed to `dynamics-starter-pack`, Pages live at https://jayanthbagare.github.io/dynamics-starter-pack/ ; landing page with color tokens, light/dark/auto theme toggle, fixed-point legend, nine chapters listed as coming soon; README.
