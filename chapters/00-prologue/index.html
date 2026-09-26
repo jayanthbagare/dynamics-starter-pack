@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 0 · State, rule, time · Dynamics Starter Pack</title>
+  <meta name="description" content="Press cos over and over and watch every start end at 0.739. State, rule, and time: the three ingredients of a dynamical system.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    /* The calculator: chapter-local chrome */
+    .calc { display: grid; grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); gap: var(--s-4); align-items: start; }
+    @media (max-width: 40rem) { .calc { grid-template-columns: minmax(0, 1fr); } }
+    .calc-body { border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--s-3); background: var(--bg); }
+    .calc-display {
+      font-family: var(--font-mono); font-size: 1.9rem; text-align: right;
+      padding: var(--s-2) var(--s-3); border: 1px solid var(--rule); border-radius: 4px;
+      background: var(--surface); overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .calc-meta { font-family: var(--font-mono); font-size: var(--fs-small); color: var(--ink-muted); text-align: right; margin: var(--s-1) 0 var(--s-3); }
+    .calc-rules { margin-bottom: var(--s-3); }
+    .calc-rules .choice { width: 100%; }
+    .calc-rules .choice label { flex: 1; text-align: center; }
+    .calc-actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+    .calc-seed { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-3); font-size: var(--fs-small); color: var(--ink-muted); }
+    .calc-seed input { font-family: var(--font-mono); font-size: var(--fs-small); width: 9rem; padding: 2px 6px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; }
+    .tape-wrap h3 { font-family: var(--font-mono); font-size: var(--fs-small); font-weight: normal; color: var(--ink-muted); margin-bottom: var(--s-2); }
+    .tape {
+      font-family: var(--font-mono); font-size: 0.875rem;
+      list-style: none; margin: 0; padding: 0;
+      max-height: 15.5rem; overflow-y: auto;
+      border-top: 1px dashed var(--rule);
+    }
+    .tape li { display: grid; grid-template-columns: 3rem 1fr; padding: 1px 0; border-bottom: 1px dashed var(--rule); }
+    .tape li .n { color: var(--ink-muted); }
+    .tape li:last-child { color: var(--c-trajectory); font-weight: 600; }
+    .fates svg { width: 100%; max-width: 40rem; height: auto; display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 0 · Strogatz Ch 1</p>
+        <h1>State, rule, time</h1>
+        <p class="lede">
+          Every dynamical system, from a pendulum to the weather, comes down to three things:
+          something you can measure right now, a rule for what comes next, and the ticking of time.
+          We’ll meet all three using a calculator with one button.
+        </p>
+      </header>
+
+      <section id="calculator" aria-labelledby="s01">
+        <h2 id="s01">A calculator with one button</h2>
+        <div class="prose">
+          <p>Type a number into a calculator, then press <strong>cos</strong>. Then press it again.
+            And again. Each press takes whatever is on the display and replaces it with its cosine
+            (in radians).</p>
+          <p>Before you press anything, make a guess.</p>
+        </div>
+
+        <div id="predict-cos"></div>
+
+        <div class="sim">
+          <div class="calc">
+            <div class="calc-body">
+              <div class="calc-display" id="display" aria-live="polite" aria-atomic="true">2</div>
+              <div class="calc-meta" id="display-meta">n = 0</div>
+              <div class="calc-rules">
+                <div class="choice" role="radiogroup" aria-label="Rule (the button)" id="rule-choice"></div>
+              </div>
+              <div class="calc-actions">
+                <button class="button primary" type="button" id="press" data-primary>Press</button>
+                <button class="button" type="button" id="press10">Press ×10</button>
+                <button class="button quiet" type="button" id="clear">Clear</button>
+              </div>
+              <label class="calc-seed">start at
+                <input id="seed-input" type="text" inputmode="decimal" autocomplete="off" aria-label="Starting number x₀">
+              </label>
+            </div>
+            <div class="tape-wrap">
+              <h3>tape</h3>
+              <ol class="tape" id="tape" aria-label="Every value so far"></ol>
+            </div>
+          </div>
+          <canvas class="plot" id="ts-calc" role="img" aria-label="Time series of the display value against the number of presses"></canvas>
+          <p class="caption">Each dot is one press. Height is the number on the display.</p>
+        </div>
+      </section>
+
+      <section id="starts" aria-labelledby="s02">
+        <h2 id="s02">Try another start</h2>
+        <div class="prose">
+          <p>Maybe 0.739 has something to do with starting at 2. Drag the start. Each time you let go,
+            the previous run stays behind as a faint trace. Or throw in ten random starts at once.</p>
+        </div>
+        <div class="sim">
+          <canvas class="plot tall" id="ts-seeds" role="img" aria-label="Time series for several starting values"></canvas>
+          <div class="controls" id="seed-controls">
+            <button class="button" type="button" id="random10">10 random starts</button>
+            <button class="button quiet" type="button" id="clear-ghosts">Clear traces</button>
+          </div>
+          <p class="caption" id="seeds-caption"></p>
+        </div>
+        <p class="aside">The rule, not the start, decides where you end up.</p>
+      </section>
+
+      <section id="names" aria-labelledby="s03">
+        <h2 id="s03">Naming what you just did</h2>
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>The number on the display is the <strong>state</strong>: everything you need to know
+              about the system right now. The button is the <strong>rule</strong>: it turns the current
+              state into the next one. The number of presses is <strong>time</strong>.</p>
+            <p>0.739… is special: pressing cos there gives back 0.739… The rule leaves it alone.
+              A state the rule doesn’t change is called a <strong>fixed point</strong>.</p>
+          </div>
+          <div data-layer="picture">
+            <svg class="diagram" viewBox="0 0 520 220" role="img" aria-label="Time series with labelled axes: state going up, time going right, and an arrow for the rule between consecutive dots">
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path class="hl-fill" d="M 0 0 L 10 5 L 0 10 z"/>
+                </marker>
+              </defs>
+              <line class="axis" x1="50" y1="190" x2="500" y2="190"/>
+              <line class="axis" x1="50" y1="20" x2="50" y2="190"/>
+              <text class="t" x="500" y="210" text-anchor="end">time n (presses) →</text>
+              <text class="t" x="12" y="20" transform="rotate(-90 12 20)" text-anchor="end">state xₙ (display) →</text>
+              <line class="stable-line" x1="50" y1="92" x2="500" y2="92"/>
+              <text class="t stable-t" x="496" y="84" text-anchor="end">fixed point 0.739…</text>
+              <polyline class="traj-line" points="70,30 115,165 160,58 205,120 250,78 295,103 340,86 385,97 430,90 475,94"/>
+              <g class="traj">
+                <circle cx="70" cy="30" r="4"/><circle cx="115" cy="165" r="4"/><circle cx="160" cy="58" r="4"/>
+                <circle cx="205" cy="120" r="4"/><circle cx="250" cy="78" r="4"/><circle cx="295" cy="103" r="4"/>
+                <circle cx="340" cy="86" r="4"/><circle cx="385" cy="97" r="4"/><circle cx="430" cy="90" r="4"/><circle cx="475" cy="94" r="4"/>
+              </g>
+              <path class="hl" d="M 76 36 Q 104 90 111 156" marker-end="url(#arrow)"/>
+              <text class="t hl-fill" x="100" y="80">rule: cos</text>
+            </svg>
+          </div>
+          <div data-layer="equation">
+            <p>Write the state after <span class="tex">n</span> presses as <span class="tex">x_n</span>.
+              The rule says how to get the next state from the current one:</p>
+            <p class="tex-display">x_{n+1} = \cos x_n, \qquad x_0 = 2.</p>
+            <p>A fixed point <span class="tex">x^*</span> is a state the rule doesn’t move:</p>
+            <p class="tex-display">\cos x^* = x^* \quad\Longrightarrow\quad x^* \approx 0.7390851.</p>
+            <p>There is no formula for <span class="tex">x^*</span> here. Pressing the button is how
+              you find it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="fates" aria-labelledby="s04">
+        <h2 id="s04">Other buttons, other fates</h2>
+        <div class="prose">
+          <p>cos pulled every start to the same number. Do other buttons do that too? Try
+            <strong>√</strong> first, then <strong>x²</strong>.</p>
+        </div>
+
+        <div id="predict-sqrt"></div>
+        <div id="predict-square"></div>
+
+        <div class="sim">
+          <div class="controls" style="margin-top:0">
+            <div class="choice" role="radiogroup" aria-label="Rule for this comparison" id="fate-choice"></div>
+            <button class="button" type="button" id="fate-run">Press ×12</button>
+          </div>
+          <canvas class="plot tall" id="ts-fates" role="img" aria-label="Time series for three starting values under the chosen rule"></canvas>
+          <p class="caption" id="fates-caption"></p>
+          <div class="fates" id="fates-line" hidden>
+            <h3 class="caption" style="margin-top:var(--s-3)">Fates on the number line</h3>
+            <div id="fates-svg"></div>
+            <p class="caption" id="fates-note"></p>
+          </div>
+        </div>
+
+        <div class="prose">
+          <p>From now on, every fixed point on this site is drawn one of two ways. A <strong>filled dot</strong>
+            means nearby starts are pulled in (<em>stable</em>). A <strong>hollow dot</strong> means nearby
+            starts are pushed away (<em>unstable</em>). You can sit exactly on a hollow dot, but the tiniest
+            nudge sends you off.</p>
+        </div>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
