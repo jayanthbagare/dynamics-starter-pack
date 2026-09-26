@@ -8,6 +8,10 @@
 //       x0: 0.3,
 //       marks: [{ p: 3.449, label: 'r₂' }],   // optional ticks along the top
 //     }),
+//
+// For flows, select can instead return { mode: 'branches', key, f: (x, p) => …, trace: [[p, x], …] }:
+// each column then shows the zeros of f, stable ones solid and unstable ones dotted (Strogatz's
+// solid/dashed convention), and `trace` draws a path on top (e.g. a ball's history, for hysteresis).
 //     paramKey: 'r',                   // click / drag / ←→ set this key
 //     windowKeys: ['rlo', 'rhi', 'xlo', 'xhi'],   // the visible window lives in the store (and URL)
 //     home: [2.5, 4, 0, 1],            // "reset zoom" goes here
@@ -19,6 +23,7 @@
 // and chaotic bands are a fine haze. The view keeps only drawing buffers, never simulation state.
 
 import { setupCanvas, tokens, scale, ticks, drawAxes } from './canvas.js';
+import { findZeros } from '../core/fixedpoints.js';
 
 const TRANSIENT = 300;
 
@@ -34,6 +39,7 @@ export function createBifurcation(canvas, store, {
   let geom = null;
   let drag = null;          // { mode: 'pick' | 'zoom', x0, y0, x1, y1 }
   let colour = null;
+  let kinds = null;         // branches mode: 1 stable, 2 unstable, 3 half, per device pixel
 
   const win = (s) => [s[kLo], s[kHi], s[kXlo], s[kXhi]];
 
@@ -41,8 +47,9 @@ export function createBifurcation(canvas, store, {
     const [plo, phi, xlo, xhi] = win(s);
     off.width = W; off.height = H;
     img = offCtx.createImageData(W, H);
+    kinds = new Uint8Array(W * H);
     job = { sig: signature(W, H, d, s), col: 0, W, H, plo, phi, xlo, xhi, step: d.step, x0: d.x0 ?? 0.3,
-      keep: Math.max(250, Math.round(H * 0.6)) };
+      keep: Math.max(250, Math.round(H * 0.6)), mode: d.mode || 'density', f: d.f };
     if (building) store.set({ [building]: true });
     requestAnimationFrame(work);
   }
@@ -55,7 +62,22 @@ export function createBifurcation(canvas, store, {
     const j = job, t0 = performance.now();
     const counts = new Uint16Array(j.H);
     const [r, g, b] = colour;
-    while (j.col < j.W && performance.now() - t0 < 8) {
+    while (j.mode === 'branches' && j.col < j.W && performance.now() - t0 < 8) {
+      const p = j.plo + ((j.col + 0.5) / j.W) * (j.phi - j.plo);
+      const dotted = Math.floor(j.col / 4) % 2 === 1;
+      for (const z of findZeros((x) => j.f(x, p), [j.xlo, j.xhi], 400)) {
+        const kind = z.kind === 'stable' ? 1 : z.kind === 'unstable' ? 2 : 3;
+        if (kind === 2 && dotted) continue;
+        const row = Math.floor(((j.xhi - z.x) / (j.xhi - j.xlo)) * j.H);
+        const t = Math.max(1, Math.round(j.H / 250)); // line thickness in device pixels
+        for (let dr = -t; dr <= t; dr++) {
+          const rr = row + dr;
+          if (rr >= 0 && rr < j.H) paint(j.col, rr, kind, j.W);
+        }
+      }
+      j.col++;
+    }
+    while (j.mode !== 'branches' && j.col < j.W && performance.now() - t0 < 8) {
       const p = j.plo + ((j.col + 0.5) / j.W) * (j.phi - j.plo);
       counts.fill(0);
       let x = j.x0;
@@ -78,11 +100,23 @@ export function createBifurcation(canvas, store, {
     else if (job === j && building) store.set({ [building]: false });
   }
 
+  let palette = null;  // branches mode colours by kind
+  function paint(col, row, kind, W) {
+    const i = row * W + col, k = 4 * i;
+    kinds[i] = kind;
+    const [r, g, b] = palette[kind];
+    img.data[k] = r; img.data[k + 1] = g; img.data[k + 2] = b; img.data[k + 3] = 255;
+  }
+
   function recolour() {
-    colour = rgb(tokens().trajectory);
+    const T = tokens();
+    colour = rgb(T.trajectory);
+    palette = [null, rgb(T.stable), rgb(T.unstable), rgb(T.ink)];
     if (!img) return;
-    const [r, g, b] = colour;
-    for (let k = 0; k < img.data.length; k += 4) { img.data[k] = r; img.data[k + 1] = g; img.data[k + 2] = b; }
+    for (let i = 0, k = 0; k < img.data.length; i++, k += 4) {
+      const [r, g, b] = kinds[i] ? palette[kinds[i]] : colour;
+      img.data[k] = r; img.data[k + 1] = g; img.data[k + 2] = b;
+    }
     offCtx.putImageData(img, 0, 0);
   }
 
@@ -125,6 +159,20 @@ export function createBifurcation(canvas, store, {
       if (m.label && x(m.p) - lastLabel > 22) { ctx.fillText(m.label, x(m.p), box.top - 4); lastLabel = x(m.p); }
     }
     ctx.restore();
+
+    // a path on top, e.g. the ball's history as the parameter was swept
+    if (d.trace?.length) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(box.left, box.top, box.right - box.left, box.bottom - box.top); ctx.clip();
+      ctx.strokeStyle = T.trajectory; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      d.trace.forEach(([tp, tx], i) => (i ? ctx.lineTo(x(tp), y(tx)) : ctx.moveTo(x(tp), y(tx))));
+      ctx.stroke();
+      const [lp, lx] = d.trace.at(-1);
+      ctx.fillStyle = T.trajectory; ctx.strokeStyle = T.bg; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(x(lp), y(lx), 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    }
 
     // the current parameter
     const p = s[paramKey];
