@@ -3,6 +3,7 @@
 // special curves: the τ-axis (Δ = 0), the positive Δ-axis (centers) and the parabola τ² = 4Δ.
 //
 //   createTraceDet(canvas, store, { tauKey: 'tau', detKey: 'det', tauRange: [-4, 4], detRange: [-3, 5] });
+//   readOnly: true shows the point without letting it be dragged (e.g. when it is computed from something else).
 
 import { setupCanvas, tokens, scale, ticks, drawAxes } from './canvas.js';
 import { classify, springMatrix, linear2d } from '../systems/linear2d.js';
@@ -10,7 +11,7 @@ import { rk4 } from '../core/integrate.js';
 
 const SNAP = 0.1;
 
-export function createTraceDet(canvas, store, { tauKey, detKey, tauRange = [-4, 4], detRange = [-3, 5], label = 'Trace–determinant plane' }) {
+export function createTraceDet(canvas, store, { tauKey, detKey, tauRange = [-4, 4], detRange = [-3, 5], label = 'Trace–determinant plane', readOnly = false }) {
   let geom = null;
   let dragging = false;
 
@@ -60,7 +61,8 @@ export function createTraceDet(canvas, store, { tauKey, detKey, tauRange = [-4, 
       { t: 1.5, D: 3.5, name: ['unstable', 'spirals'] },
     ];
     ctx.font = `11px ${T.mono}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-    for (const r of regions) {
+    const compact = box.right - box.left < 300;   // small copies: just the curves and the point
+    for (const r of compact ? [] : regions) {
       if (r.t < t0 || r.t > t1 || r.D < d0 || r.D > d1) continue;
       const half = Math.max(...r.name.map((l) => ctx.measureText(l).width)) / 2 + 3;
       const cx = Math.min(box.right - half, Math.max(box.left + half, x(r.t)));
@@ -69,10 +71,12 @@ export function createTraceDet(canvas, store, { tauKey, detKey, tauRange = [-4, 
       r.name.forEach((l, i) => ctx.fillText(l, cx, y(r.D) + 2 + i * 13));
     }
     ctx.fillStyle = T.muted;
-    ctx.textAlign = 'left';
-    ctx.fillText('centers (τ = 0)', x(0) + 6, box.top + 6);
-    ctx.textAlign = 'right';
-    ctx.fillText('τ² = 4Δ', x(1.75) - 8, y(1.75 * 1.75 / 4) - 6);
+    if (!compact) {
+      ctx.textAlign = 'left';
+      ctx.fillText('centers (τ = 0)', x(0) + 6, box.top + 6);
+      ctx.textAlign = 'right';
+      ctx.fillText('τ² = 4Δ', x(1.75) - 8, y(1.75 * 1.75 / 4) - 6);
+    }
     ctx.restore();
 
     // the point
@@ -103,6 +107,12 @@ export function createTraceDet(canvas, store, { tauKey, detKey, tauRange = [-4, 
     const [st, sD] = snapped(t, D);
     store.set({ [tauKey]: st, [detKey]: sD });
   };
+  if (readOnly) {
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', label);
+    return { redraw };
+  }
+
   const local = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
   canvas.addEventListener('pointerdown', (e) => { if (!geom) return; dragging = true; setFromPx(...local(e)); canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener('pointermove', (e) => { if (dragging) setFromPx(...local(e)); });
