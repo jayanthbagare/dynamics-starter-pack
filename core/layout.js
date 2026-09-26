@@ -7,6 +7,8 @@
 // footer after it. Links are built from this file's own URL, so they work at the domain root
 // and under the GitHub Pages subpath (/dynamics-starter-pack/) without configuration.
 
+import { initPresenterMode } from '../ui/presenter-mode.js';
+
 export const ROOT = new URL('../', import.meta.url);
 
 export const chapters = [
@@ -50,6 +52,7 @@ export function mountLayout({ chapter = null } = {}) {
     </footer>`);
 
   initThemeToggle(wrap.querySelector('.theme-toggle'));
+  initPresenterMode();
 }
 
 function chapterNav(current) {
