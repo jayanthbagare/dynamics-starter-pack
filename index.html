@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dynamics Starter Pack</title>
+  <meta name="description" content="An interactive, visual introduction to dynamical systems — a starter pack for reading Strogatz, Nonlinear Dynamics and Chaos.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    // Apply a saved theme before first paint to avoid a flash.
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles/base.css">
+</head>
+<body>
+  <div class="wrap">
+    <header class="site-header">
+      <a class="brand" href="./">dynamics starter pack</a>
+      <button class="theme-toggle" type="button" id="theme-toggle" aria-live="polite">theme: auto</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">x<sub>n+1</sub> = f(x<sub>n</sub>) &nbsp;→&nbsp; ẋ = f(x)</p>
+        <h1>Dynamics Starter Pack</h1>
+        <p class="lede">
+          A hands-on warm-up for Steven Strogatz’s <em>Nonlinear Dynamics and Chaos</em>.
+          You will drag, predict, and press your way through iteration, chaos, and bifurcations,
+          then cross over to flows, phase planes, and the Lorenz attractor, so that when you
+          open the book, chapters 1–10 already feel familiar.
+        </p>
+        <p class="prose muted">
+          Touch first, name second, equation third. All you need is one-variable calculus.
+        </p>
+        <ul class="legend" aria-label="Fixed-point notation used throughout the site">
+          <li>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><circle class="fp-stable" cx="7" cy="7" r="5.5" stroke-width="1.5"/></svg>
+            stable fixed point
+          </li>
+          <li>
+            <svg viewBox="0 0 14 14" aria-hidden="true"><circle class="fp-unstable" cx="7" cy="7" r="5.5" stroke-width="1.5"/></svg>
+            unstable
+          </li>
+          <li>
+            <svg viewBox="0 0 14 14" aria-hidden="true">
+              <circle class="fp-half-ring" cx="7" cy="7" r="5.5" stroke-width="1.5"/>
+              <path class="fp-half-fill" d="M7 1.5 A5.5 5.5 0 0 0 7 12.5 Z"/>
+            </svg>
+            half-stable
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="chapters-heading">
+        <h2 id="chapters-heading">Chapters</h2>
+
+        <p class="part-label">Part I · Maps</p>
+        <ol class="chapters">
+          <li class="chapter">
+            <span class="num">Ch 0</span>
+            <h3>State, rule, time</h3>
+            <p>Press cos over and over. Why does every start end up at 0.739…?</p>
+            <div class="meta"><span>Strogatz Ch 1</span><span class="status">coming soon</span></div>
+          </li>
+          <li class="chapter">
+            <span class="num">Ch 1</span>
+            <h3>Iteration &amp; fixed points</h3>
+            <p>Cobweb diagrams with a draggable seed. Tilt the slope through magnitude 1 and watch stability flip.</p>
+            <div class="meta"><span>§10.1–10.2</span><span class="status">coming soon</span></div>
+          </li>
+          <li class="chapter">
+            <span class="num">Ch 2</span>
+            <h3>The butterfly effect</h3>
+            <p>Two seeds a ten-millionth apart. How long until they disagree completely?</p>
+            <div class="meta"><span>§9.3, §10.5</span><span class="status">coming soon</span></div>
+          </li>
+          <li class="chapter">
+            <span class="num">Ch 3</span>
+            <h3>Bifurcation &amp; universality</h3>
+            <p>Build the bifurcation diagram live, and find the same constant 4.669… in a hump you draw yourself.</p>
+            <div class="meta"><span>§10.2–10.7</span><span class="status">coming soon</span></div>
+          </li>
+        </ol>
+
+        <p class="part-label">Part II · Flows</p>
+        <ol class="chapters" start="4">
+          <li class="chapter">
+            <span class="num">Ch 4</span>
+            <h3>Flows on the line</h3>
+            <p>Reshape f(x) and watch the arrows and fixed points on the axis follow. Euler’s method turns out to be iteration.</p>
+            <div class="meta"><span>Strogatz Ch 2</span><span class="status">coming soon</span></div>
+          </li>
+          <li class="chapter">
+            <span class="num">Ch 5</span>
+            <h3>Bifurcations in 1D flows</h3>
+            <p>Tilt a landscape until valleys merge and vanish: saddle-node, transcritical, pitchfork, hysteresis.</p>
+            <div class="meta"><span>Strogatz Ch 3</span><span class="status">coming soon</span></div>
+          </li>
+          <li class="chapter">
+            <span class="num">Ch 6</span>
+            <h3>Linear systems</h3>
+            <p>Drag a point across the trace–determinant plane and the phase portrait morphs to match.</p>
+            <div class="meta"><span>Strogatz Ch 5</span><span class="status">coming soon</span></div>
+          </li>
+          <li class="chapter">
+            <span class="num">Ch 7</span>
+            <h3>The phase plane</h3>
+            <p>A pendulum and its portrait, side by side. Linearization, competing species, limit cycles, Hopf.</p>
+            <div class="meta"><span>Strogatz Ch 6–8</span><span class="status">coming soon</span></div>
+          </li>
+          <li class="chapter">
+            <span class="num">Ch 8</span>
+            <h3>Lorenz: closing the loop</h3>
+            <p>Ten thousand particles on the butterfly, and a hidden one-dimensional map inside it.</p>
+            <div class="meta"><span>Strogatz Ch 9</span><span class="status">coming soon</span></div>
+          </li>
+        </ol>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        A companion to Steven H. Strogatz, <em>Nonlinear Dynamics and Chaos</em>. It is not affiliated
+        with the book or its publisher and reproduces none of its text, figures, or exercises.
+        Chapters cite sections of the book to read next.
+      </p>
+      <p>Plain HTML and JavaScript with no build step. Fork it and open <code>index.html</code>.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Theme toggle: auto → light → dark → auto. "auto" follows the OS setting.
+    (function () {
+      const root = document.documentElement;
+      const btn = document.getElementById('theme-toggle');
+      const order = ['auto', 'light', 'dark'];
+      const current = () => root.dataset.theme || 'auto';
+      const render = () => { btn.textContent = 'theme: ' + current(); };
+      btn.addEventListener('click', () => {
+        const next = order[(order.indexOf(current()) + 1) % order.length];
+        if (next === 'auto') delete root.dataset.theme; else root.dataset.theme = next;
+        try {
+          if (next === 'auto') localStorage.removeItem('theme'); else localStorage.setItem('theme', next);
+        } catch (e) {}
+        render();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
