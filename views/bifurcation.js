@@ -116,12 +116,13 @@ export function createBifurcation(canvas, store, {
     // marks along the top
     ctx.save();
     ctx.font = `11px ${T.mono}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-    for (const m of d.marks || []) {
+    let lastLabel = -Infinity;
+    for (const m of [...(d.marks || [])].sort((a, b) => a.p - b.p)) {
       if (m.p < plo || m.p > phi) continue;
       ctx.strokeStyle = ctx.fillStyle = m.style === 'predicted' ? T.highlight : T.ink;
       ctx.setLineDash(m.style === 'predicted' ? [3, 3] : []);
       ctx.beginPath(); ctx.moveTo(x(m.p), box.top); ctx.lineTo(x(m.p), box.top + 10); ctx.stroke();
-      if (m.label) ctx.fillText(m.label, x(m.p), box.top - 4);
+      if (m.label && x(m.p) - lastLabel > 22) { ctx.fillText(m.label, x(m.p), box.top - 4); lastLabel = x(m.p); }
     }
     ctx.restore();
 
