@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 3 · Bifurcation &amp; universality · Dynamics Starter Pack</title>
+  <meta name="description" content="Turn the dial on the logistic map, watch the bifurcation diagram build itself, measure Feigenbaum’s δ ≈ 4.669, and find it again in a hump you draw.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    canvas.diagram { display: block; width: 100%; height: 380px; touch-action: pan-y; cursor: crosshair; }
+    canvas.diagram.short { height: 300px; }
+    canvas.editor { display: block; width: 100%; height: 260px; touch-action: none; cursor: ns-resize; }
+    body.presenter canvas.diagram { height: 520px; }
+    .veil { position: relative; }
+    .veil[data-veiled] > *:not(.veil-note) { visibility: hidden; }
+    .veil-note { display: none; }
+    .veil[data-veiled] .veil-note {
+      display: flex; align-items: center; justify-content: center;
+      position: absolute; inset: 0; z-index: 1;
+      font-family: var(--font-mono); font-size: var(--fs-small); color: var(--ink-muted);
+      border: 1px dashed var(--rule); border-radius: var(--radius);
+    }
+    table.data { border-collapse: collapse; font-family: var(--font-mono); font-size: 0.875rem; margin-top: var(--s-3); }
+    table.data th, table.data td { text-align: right; padding: 2px var(--s-3) 2px 0; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+    table.data th { font-weight: normal; color: var(--ink-muted); }
+    table.data td.good { color: var(--c-stable); font-weight: 600; }
+    table.data button { font: inherit; background: none; border: 0; color: var(--ink-muted); cursor: pointer; padding: 0 4px; }
+    table.data button:hover { color: var(--c-unstable); }
+    .button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 3 · Strogatz §10.2–10.7</p>
+        <h1>Bifurcation &amp; universality</h1>
+        <p class="lede">
+          Chapter 2 showed a calm hump and a chaotic one. Here the height of the hump becomes a dial, and
+          you’ll watch order break down into chaos one doubling at a time. The doublings come at a
+          rate given by a number that turns up for almost every hump.
+        </p>
+      </header>
+
+      <section id="dial" aria-labelledby="s31">
+        <h2 id="s31">Turn the dial</h2>
+        <div class="prose">
+          <p>The rule is <span class="tex">x \mapsto r\,x(1-x)</span>, the <strong>logistic map</strong>.
+            The dial <span class="tex">r</span> sets the height of the hump. At <span class="tex">r = 2.8</span> you get
+            Chapter 2’s calm twins, and at <span class="tex">r = 4</span> the chaotic ones. What happens in between?</p>
+        </div>
+
+        <div id="predict-two"></div>
+
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="square" id="web1" aria-describedby="read1"></canvas>
+            <div>
+              <canvas class="plot" id="ts1" role="img" aria-label="Time series at the current r"></canvas>
+              <div class="controls" id="r-controls"></div>
+              <p class="readout" id="read1" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+
+        <div id="predict-four"></div>
+      </section>
+
+      <section id="diagram" aria-labelledby="s32">
+        <h2 id="s32">The diagram builds itself</h2>
+        <div class="prose">
+          <p>Instead of trying one <span class="tex">r</span> at a time, try them all. For each
+            <span class="tex">r</span> (one thin column), run the rule until the start is forgotten, then mark
+            every place it keeps landing. One value gives a dot, a 2-cycle gives two dots, and chaos gives a smear.</p>
+        </div>
+
+        <div id="predict-cascade"></div>
+
+        <div class="sim veil" id="diagram-sim" data-veiled>
+          <p class="veil-note">make your prediction first</p>
+          <canvas class="diagram" id="bif"></canvas>
+          <div class="controls">
+            <button class="button" type="button" id="zoom-tool" aria-pressed="false">Zoom: drag a box</button>
+            <button class="button quiet" type="button" id="zoom-out">Zoom out</button>
+            <button class="button quiet" type="button" id="zoom-reset">Whole picture</button>
+            <button class="button quiet" type="button" data-preset="cascade">The cascade</button>
+            <button class="button quiet" type="button" data-preset="window">Period-3 window</button>
+            <button class="button quiet" type="button" data-preset="inside">Inside the window</button>
+          </div>
+          <p class="caption">Click or drag on the diagram to choose r (the ▲). With the diagram focused, ←/→ nudge it.</p>
+          <div class="sim-grid" style="margin-top:var(--s-3)">
+            <canvas class="square" id="web2" role="img" aria-describedby="read2"></canvas>
+            <div>
+              <canvas class="plot" id="ts2" role="img" aria-label="Time series at the chosen r"></canvas>
+              <p class="readout" id="read2" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>Each branch is a cycle. As <span class="tex">r</span> grows, the cycle’s slope passes through
+              −1: it turns hollow and splits into a cycle twice as long. One value becomes 2, then 4, then 8…
+              The splits come faster and faster and pile up at <span class="tex">r_\infty \approx 3.5699</span>. Past that
+              point is chaos, broken up by windows of order such as the period-3 window.</p>
+          </div>
+          <div data-layer="picture">
+            <p>Zoom into any branch just before it splits and you see a miniature copy of the whole diagram.
+              Try <em>Inside the window</em>: the period-3 window has its own complete cascade.</p>
+          </div>
+          <div data-layer="equation">
+            <p>A 2-cycle is a pair <span class="tex">p, q</span> with <span class="tex">f(p) = q</span> and
+              <span class="tex">f(q) = p</span>, so both are fixed points of <span class="tex">f \circ f</span>. The fixed point
+              <span class="tex">x^* = 1 - 1/r</span> has slope</p>
+            <p class="tex-display">f'(x^*) = 2 - r,</p>
+            <p>which passes −1 at <span class="tex">r = 3</span>. That’s the first doubling. The 2-cycle is stable while
+              <span class="tex">|(f\circ f)'(p)| = |f'(p)\,f'(q)| &lt; 1</span>, and it doubles in turn when that product
+              passes −1, at <span class="tex">r = 1 + \sqrt 6 \approx 3.449</span>.</p>
+          </div>
+        </div>
+        <p class="aside">Strogatz calls this picture an <em>orbit diagram</em>, and saves “bifurcation diagram” for
+          flows. It’s the same idea.</p>
+      </section>
+
+      <section id="doublings" aria-labelledby="s33">
+        <h2 id="s33">Measure the doublings</h2>
+        <div class="prose">
+          <p>The splits come faster and faster. How much faster? Zoom in, put the ▲ exactly where a branch
+            splits, and mark it. Mark at least four.</p>
+        </div>
+
+        <div id="predict-delta"></div>
+
+        <div class="sim">
+          <canvas class="diagram short" id="bif2"></canvas>
+          <div class="controls">
+            <button class="button primary" type="button" id="mark">Mark doubling</button>
+            <button class="button" type="button" id="zoom-tool2" aria-pressed="false">Zoom: drag a box</button>
+            <button class="button quiet" type="button" id="zoom-out2">Zoom out</button>
+            <button class="button quiet" type="button" id="zoom-reset2">Reset</button>
+            <label class="caption" style="margin:0"><input type="checkbox" id="reveal"> show accurate values</label>
+          </div>
+          <div class="table-scroll"><table class="data" id="marks-table"></table></div>
+          <p class="readout" id="marks-read" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="universal" aria-labelledby="s34">
+        <h2 id="s34">Universality: draw your own hump</h2>
+        <div class="prose">
+          <p>Maybe 4.669 is just a property of <span class="tex">r\,x(1-x)</span>. Test it: draw any hump you like
+            and use its height <span class="tex">a</span> as the dial. The rule becomes
+            <span class="tex">x \mapsto a\,h(x)</span>, where <span class="tex">h</span> is your hump scaled to a peak of 1.</p>
+        </div>
+
+        <div class="sim">
+          <div class="controls" style="margin-top:0" id="hump-presets"></div>
+          <canvas class="editor" id="editor" style="margin-top:var(--s-3)"></canvas>
+          <p class="caption">Drag the ◆ handles up and down, or focus the editor and use the arrow keys.</p>
+          <canvas class="diagram short" id="bif3" style="margin-top:var(--s-3)"></canvas>
+          <div class="controls">
+            <button class="button" type="button" id="zoom-tool3" aria-pressed="false">Zoom: drag a box</button>
+            <button class="button quiet" type="button" id="zoom-reset3">Reset</button>
+          </div>
+        </div>
+
+        <div id="predict-universal"></div>
+
+        <div class="sim veil" id="delta-sim" data-veiled>
+          <p class="veil-note">make your prediction first</p>
+          <p class="panel-label caption" style="margin-top:0">δ, measured for your hump (updates when you change it)</p>
+          <div class="table-scroll"><table class="data" id="delta-table"></table></div>
+          <p class="readout" id="delta-read" aria-live="polite"></p>
+        </div>
+
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>Each doubling happens at a finer scale than the last. The only part of the hump the machinery
+              “sees” at those scales is its top. Any rounded top looks the same close up, so every rounded
+              hump gives the same δ.</p>
+            <p>A sharp top (tent) or a very flat top (flat top) looks different close up, so it gives a different
+              answer, or no cascade at all.</p>
+          </div>
+          <div data-layer="picture">
+            <p>Try the presets, then drag. The δ column settles to the same 4.669 unless you choose the flat top
+              or the tent.</p>
+          </div>
+          <div data-layer="equation">
+            <p>The Feigenbaum constant is the limiting ratio of successive gaps between doublings:</p>
+            <p class="tex-display">\delta = \lim_{n\to\infty} \frac{r_n - r_{n-1}}{r_{n+1} - r_n} = 4.669201\ldots</p>
+            <p>The table measures it with <strong>superstable</strong> parameters <span class="tex">s_n</span>, where the peak
+              <span class="tex">c</span> of the hump lies on the <span class="tex">2^n</span>-cycle
+              (<span class="tex">f^{2^n}(c) = c</span>). These are easier to pin down than the doubling points, and their
+              gaps shrink by the same δ.</p>
+          </div>
+        </div>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
