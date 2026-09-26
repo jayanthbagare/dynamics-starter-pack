@@ -3,24 +3,30 @@
 //   createTimeseries(canvas, store, {
 //     select: (state) => ({
 //       series: [{ values: [x0, x1, …], role: 'main' | 'ghost', label: 'start 0.9' }],  // label optional
+//                                       // style: 'twin' draws a series dashed with hollow dots
 //       nMax: 30,                       // right edge of the time axis
 //       yRange: [0, 2],                 // values outside are clipped, drawn as an edge marker
 //       fixedLines: [{ y: 0.739, kind: 'stable' }],   // optional
 //       highlight: 12,                  // optional: step to emphasise
+//       refLine: { from: [0, 1e-7], to: [30, 0.1] },  // optional straight guide (a "ruler")
+//       markers: [{ n: 23, label: 'they part' }],     // optional labelled vertical lines
 //     }),
 //     hoverKey: 'hoverN',               // optional: writes the hovered step into the store
+//     yScale: 'log',                    // optional: log₁₀ axis; values ≤ 0 are not drawn
 //   });
 //
 // The view only draws what `select` returns; it keeps no simulation state of its own.
 
 import { setupCanvas, tokens, scale, ticks, drawAxes, drawFixedPoint } from './canvas.js';
 
-export function createTimeseries(canvas, store, { select, hoverKey = null, xLabel = 'n', yLabel = 'xₙ' }) {
+export function createTimeseries(canvas, store, { select, hoverKey = null, xLabel = 'n', yLabel = 'xₙ', yScale = 'linear' }) {
+  const log = yScale === 'log';
+  const tf = log ? (v) => (v > 0 ? Math.log10(v) : NaN) : (v) => v;
   let geom = null; // last-drawn scales, for hover hit-testing
 
   const redraw = setupCanvas(canvas, (ctx, { w, h }) => {
     const T = tokens();
-    const d = select(store.get());
+    const d = log ? toLog(select(store.get()), tf) : select(store.get());
     const box = { left: 46, right: w - 14, top: 10, bottom: h - 26 };
     const nMax = Math.max(1, d.nMax);
     const [y0, y1] = d.yRange;
@@ -32,7 +38,8 @@ export function createTimeseries(canvas, store, { select, hoverKey = null, xLabe
     drawAxes(ctx, T, {
       x, y, box, xLabel, yLabel,
       xTicks: ticks(0, nMax, 6).filter(Number.isInteger),
-      yTicks: ticks(y0, y1, 5),
+      yTicks: log ? logTicks(y0, y1) : ticks(y0, y1, 5),
+      yFormat: log ? pow10 : undefined,
     });
 
     ctx.save();
@@ -54,10 +61,40 @@ export function createTimeseries(canvas, store, { select, hoverKey = null, xLabe
       ctx.restore();
     }
 
-    const ordered = [...d.series].sort((a, b) => (a.role === 'main') - (b.role === 'main'));
+    if (d.refLine) {
+      const [[n0, v0], [n1, v1]] = [d.refLine.from, d.refLine.to];
+      ctx.save();
+      ctx.strokeStyle = T.parameter; ctx.lineWidth = 2; ctx.setLineDash([8, 5]);
+      ctx.beginPath(); ctx.moveTo(x(n0), y(v0)); ctx.lineTo(x(n1), y(v1)); ctx.stroke();
+      ctx.restore();
+    }
+
+    for (const m of d.markers || []) {
+      if (m.n < 0 || m.n > nMax) continue;
+      ctx.save();
+      ctx.strokeStyle = T.ink; ctx.globalAlpha = 0.55; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(x(m.n), box.top); ctx.lineTo(x(m.n), box.bottom); ctx.stroke();
+      ctx.restore();
+    }
+
+    // ghosts at the back, then twins, then main runs on top (a main dot sits inside a twin's hollow ring)
+    const rank = (s) => (s.role !== 'main' ? 0 : s.style === 'twin' ? 1 : 2);
+    const ordered = [...d.series].sort((a, b) => rank(a) - rank(b));
     for (const s of ordered) drawSeries(ctx, T, s, x, y, [y0, y1], box, d.highlight);
     ctx.restore();
-    drawLabels(ctx, T, d.series, x, y, [y0, y1], box);
+    const taken = drawLabels(ctx, T, d.series, x, y, [y0, y1], box);
+
+    // marker labels go wherever they don't cover a series label: top, bottom, or middle
+    for (const m of d.markers || []) {
+      if (m.n < 0 || m.n > nMax) continue;
+      const right = x(m.n) > box.right - 140;
+      const px = x(m.n) + (right ? -5 : 5);
+      const w = measure(ctx, T, m.label);
+      const left = right ? px - w : px;
+      const py = [box.top + 10, box.bottom - 12, (box.top + box.bottom) / 2].find((cy) =>
+        !taken.some((r) => left < r.right && left + w > r.left && cy - 8 < r.bottom && cy + 8 > r.top)) ?? box.top + 10;
+      plate(ctx, T, m.label, px, py, right ? 'right' : 'left', T.ink);
+    }
 
     for (const f of d.fixedLines || []) {
       if (f.y >= y0 && f.y <= y1) drawFixedPoint(ctx, T, box.right, y(f.y), f.kind, 4.5);
@@ -81,11 +118,13 @@ export function createTimeseries(canvas, store, { select, hoverKey = null, xLabe
 
 function drawSeries(ctx, T, s, x, y, [y0, y1], box, highlight) {
   const main = s.role === 'main';
-  const colour = main ? T.trajectory : T.muted;
+  const twin = s.style === 'twin';
+  const colour = twin ? T.highlight : main ? T.trajectory : T.muted;
   ctx.save();
   ctx.strokeStyle = colour; ctx.fillStyle = colour;
   ctx.globalAlpha = main ? 1 : 0.45;
   ctx.lineWidth = main ? 1.5 : 1;
+  if (twin) ctx.setLineDash([5, 3]);
 
   // Line through in-range points; break at anything undefined or off the chart.
   ctx.beginPath();
@@ -96,6 +135,7 @@ function drawSeries(ctx, T, s, x, y, [y0, y1], box, highlight) {
     else pen = false;
   });
   ctx.stroke();
+  ctx.setLineDash([]);
 
   const r = main ? 3 : 2;
   s.values.forEach((v, n) => {
@@ -107,7 +147,9 @@ function drawSeries(ctx, T, s, x, y, [y0, y1], box, highlight) {
       ctx.closePath(); ctx.fill();
       return;
     }
-    ctx.beginPath(); ctx.arc(x(n), y(v), r, 0, 2 * Math.PI); ctx.fill();
+    ctx.beginPath(); ctx.arc(x(n), y(v), twin ? r + 0.5 : r, 0, 2 * Math.PI);
+    if (twin) { ctx.save(); ctx.fillStyle = T.bg; ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); }
+    else ctx.fill();
   });
 
   if (main && highlight != null && Number.isFinite(s.values[highlight])) {
@@ -135,12 +177,53 @@ function drawLabels(ctx, T, series, x, y, [y0, y1], box) {
     const a = labels[i - 1], b = labels[i];
     if (Math.abs(a.px - b.px) < 90 && b.py - a.py < 13) b.py = a.py + 13;
   }
-  ctx.save();
-  ctx.fillStyle = T.muted; ctx.font = `11px ${T.mono}`; ctx.textBaseline = 'middle';
-  for (const l of labels) {
+  return labels.map((l) => {
     const right = l.px > box.right - 90;
-    ctx.textAlign = right ? 'right' : 'left';
-    ctx.fillText(l.text, l.px + (right ? -10 : 8), Math.max(box.top + 6, l.py));
-  }
-  ctx.restore();
+    return plate(ctx, T, l.text, l.px + (right ? -10 : 8), Math.max(box.top + 8, l.py), right ? 'right' : 'left', T.muted);
+  });
 }
+
+function measure(ctx, T, text) {
+  ctx.save(); ctx.font = `11px ${T.mono}`;
+  const w = ctx.measureText(text).width;
+  ctx.restore();
+  return w;
+}
+
+// Small text on a background plate, so it stays legible over data. Returns the plate's rectangle.
+function plate(ctx, T, text, px, py, align, colour) {
+  ctx.save();
+  ctx.font = `11px ${T.mono}`; ctx.textBaseline = 'middle'; ctx.textAlign = align;
+  const w = ctx.measureText(text).width;
+  const left = align === 'right' ? px - w : px;
+  ctx.fillStyle = T.bg; ctx.globalAlpha = 0.85;
+  ctx.fillRect(left - 3, py - 8, w + 6, 16);
+  ctx.globalAlpha = 1; ctx.fillStyle = colour;
+  ctx.fillText(text, px, py);
+  ctx.restore();
+  return { left: left - 3, right: left + w + 3, top: py - 8, bottom: py + 8 };
+}
+
+// --- log scale -------------------------------------------------------------
+
+// Move everything the caller gave us into log₁₀ space; the drawing code then stays linear.
+function toLog(d, tf) {
+  return {
+    ...d,
+    yRange: d.yRange.map(tf),
+    series: d.series.map((s) => ({ ...s, values: s.values.map(tf) })),
+    fixedLines: (d.fixedLines || []).map((f) => ({ ...f, y: tf(f.y) })),
+    refLine: d.refLine && { from: [d.refLine.from[0], tf(d.refLine.from[1])], to: [d.refLine.to[0], tf(d.refLine.to[1])] },
+  };
+}
+
+function logTicks(a, b) {
+  const lo = Math.ceil(a), hi = Math.floor(b);
+  const step = Math.max(1, Math.ceil((hi - lo) / 6));
+  const out = [];
+  for (let k = hi; k >= lo; k -= step) out.unshift(k);
+  return out;
+}
+
+const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
+const pow10 = (k) => (k === 0 ? '1' : '10' + String(k).split('').map((c) => SUP[c]).join(''));
