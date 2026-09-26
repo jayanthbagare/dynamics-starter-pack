@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 10 · The Mandelbrot set · Dynamics Starter Pack</title>
+  <meta name="description" content="Explore the complex plane. Watch points escape to infinity or stay bounded.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    .mandel-stage {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--s-3);
+      margin-top: var(--s-3);
+      margin-bottom: var(--s-3);
+    }
+    @media (max-width: 800px) {
+      .mandel-stage { grid-template-columns: 1fr; }
+    }
+    .mandel-view {
+      position: relative;
+      background: #000;
+      border-radius: var(--radius);
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+    }
+    .mandel-view canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: crosshair;
+    }
+    .orbit-view {
+      background: var(--surface-raised);
+      border-radius: var(--radius);
+      aspect-ratio: 1;
+    }
+    .orbit-view canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 10 · Strogatz §11.4</p>
+        <h1>The Mandelbrot set</h1>
+        <p class="lede">
+          We return to iteration, but this time in two dimensions. Instead of a real number line, we use the complex plane. 
+          For every point, we ask one simple question: if we run the rule forever, does the point explode to infinity, or does it stay trapped?
+        </p>
+      </header>
+
+      <section id="mandelbrot" aria-labelledby="s101">
+        <h2 id="s101">The bug and its boundary</h2>
+        <div class="prose">
+          <p>The rule is <span class="tex">z_{n+1} = z_n^2 + c</span>. We always start at <span class="tex">z_0 = 0</span>. 
+          The dial we turn is <span class="tex">c</span>, which is a point on the screen. 
+          If the sequence stays small forever, we color the point <span class="tex">c</span> black. If it escapes, we color it based on how fast it ran away.</p>
+        </div>
+        
+        <p class="readout">Drag to pan. Scroll or pinch to zoom. Tap or hover to see the orbit.</p>
+        
+        <div class="mandel-stage">
+          <div class="mandel-view">
+            <canvas id="mandel-canvas"></canvas>
+          </div>
+          <div>
+            <div class="orbit-view">
+              <canvas id="orbit-canvas"></canvas>
+            </div>
+            <p class="readout" id="orbit-read" style="margin-top:var(--s-2)">Hover over the set...</p>
+          </div>
+        </div>
+
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>The black shape is the Mandelbrot set. It is a dictionary of all the different dynamics that can happen. 
+            The boundary is infinitely complicated. No matter how deep you zoom, you will find smaller copies of the bug, 
+            decorated with spirals and seahorses.</p>
+          </div>
+          <div data-layer="picture">
+            <p>Look at the orbit pane on the right. When your pointer is deep inside the main body, the orbit settles to a single fixed point. 
+            In the head of the bug, it bounces between two points (period-2). In the smaller bulbs, period-3, period-4... 
+            Outside the set, the points spiral away endlessly.</p>
+          </div>
+          <div data-layer="equation">
+            <p>Complex numbers have two parts: <span class="tex">z = x + iy</span>. 
+            Squaring a complex number means <span class="tex">z^2 = (x + iy)^2 = (x^2 - y^2) + i(2xy)</span>. 
+            So the single complex rule <span class="tex">z_{n+1} = z_n^2 + c</span> is actually two real rules coupled together:</p>
+            <p class="tex-display">x_{n+1} = x_n^2 - y_n^2 + c_x</p>
+            <p class="tex-display">y_{n+1} = 2 x_n y_n + c_y</p>
+          </div>
+        </div>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

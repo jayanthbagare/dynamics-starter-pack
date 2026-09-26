@@ -46,8 +46,10 @@ stays quiet. No stock imagery, no decorative gradients.
 | 6 | 06-linear | Linear systems | Drag point on trace–determinant plane; phase portrait morphs | Ch 5 |
 | 7 | 07-phase-plane | The phase plane | Pendulum ↔ portrait; linearization zoom; competition; limit cycle; Hopf | Ch 6–8 |
 | 8 | 08-lorenz | Lorenz: closing the loop | 10k-particle cloud; waterwheel; peak-to-peak map → tent map | Ch 9 |
+| 9 | 09-fractal-dimension | The Cantor set & fractal dimension | Construct Cantor/Koch curves, zoom to see similarity | §11.1–11.3 |
+| 10 | 10-mandelbrot | The Mandelbrot set | Zoomable Mandelbrot with linked orbit view | §11.4 |
 
-Out of scope for v1 (do not build): fractals, Mandelbrot, magnetic pendulum, pattern formation.
+Out of scope for v1 (do not build): magnetic pendulum, pattern formation.
 
 ## Every chapter ends with a "Strogatz lens" panel
 Sections to read next, notation mapping, and **three original exercises** that use the sims.
@@ -102,6 +104,7 @@ Views receive a store and subscribe; they never own simulation state.
 - [x] M5 — tracedet + phase2d → Ch 6
 - [x] M6 — Ch 7
 - [x] M7 — scene3d → Ch 8
+- [x] M8 — Ch 9 & 10 (Part III: Fractals)
 
 ## Working rules for Claude Code
 - **Plan before executing.** For each milestone, propose a plan and wait for approval.
@@ -123,3 +126,4 @@ Views receive a store and subscribe; they never own simulation state.
 - 2026-09-26 — M5 shipped: systems/linear2d.js (eigen, classify, spring form); views phase2d (field, trajectories, eigen lines, particle cloud that idles off-screen) and tracedet (regions, snapping, thumbnails); Ch 6 live with the eigenvector primer (audience LA comfort still TBD, so primer included, open by default), uncoupled rates, eigenvector highways, and the trace–determinant map driving a spring. Centers drawn half-filled (neutral).
 - 2026-09-26 — M6 shipped: Ch 7 live (pendulum ↔ portrait on a cylinder with separatrix and damping, linearization zoom with Ch 6 map, competition with nullclines and separatrix, van der Pol limit cycle and relaxation, Hopf with radius diagram and eigenvalue point on the τ–Δ map). systems: pendulum (contract form), competition, vanderpol, hopf; core: findFixedPoints2D + Jacobian; phase2d: level sets, curves, wrap, live state; canvases skip redraws off-screen.
 - 2026-09-26 — M7 shipped, v1 complete: systems/lorenz.js; views/scene3d.js (10k-point cloud, fading trajectory, markers) and shared views/orbit-camera.js; Ch 8 live (Lorenz in 3D with r dial, waterwheel drawn from the Lorenz state, 10,000-particle ball with log-scale spread and ruler at 60 fps, peak-to-peak Lorenz map with cobweb and Ch 3 tent, closing-the-loop recap). README updated for v1.
+- 2026-09-26 — M8 shipped, v2 Part III Fractals: Ch 9 live (Cantor set, Koch curve, similarity dimension with 3x magnifying glass); Ch 10 live (Mandelbrot set with WebGL fragment shader, linked complex plane orbit view); systems updated; README updated for v2.

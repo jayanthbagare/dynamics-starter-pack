@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 9 · Fractal dimension · Dynamics Starter Pack</title>
+  <meta name="description" content="Construct the Cantor set and Koch curve. Explore similarity dimension and self-similarity.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    .fractal-stage { display: block; width: 100%; height: 200px; touch-action: pan-y; margin-bottom: var(--s-3); background: var(--surface-raised); border-radius: var(--radius); }
+    .glass { display: block; width: 100%; height: 300px; touch-action: none; cursor: crosshair; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 9 · Strogatz §11.1–11.3</p>
+        <h1>Fractal dimension</h1>
+        <p class="lede">
+          In a classical world, dimensions are whole numbers: a point is 0, a line is 1, a square is 2. 
+          But when a shape is made of smaller copies of itself, the rules change. We start by repeatedly removing 
+          the middle third of a line, then we fold a curve until it's infinitely long but bounds a finite area.
+        </p>
+      </header>
+
+      <section id="cantor" aria-labelledby="s91">
+        <h2 id="s91">The Cantor set</h2>
+        <div class="prose">
+          <p>Start with a solid line segment from 0 to 1. Remove the open middle third. You are left with two smaller segments.
+          Remove the middle third of each of those. Keep going forever. What is left over?</p>
+        </div>
+        <div id="predict-cantor"></div>
+        <div class="sim">
+          <canvas class="fractal-stage" id="stage-cantor"></canvas>
+          <div class="controls" id="cantor-controls"></div>
+          <p class="readout" id="cantor-read" aria-live="polite"></p>
+        </div>
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>At each step we take out a chunk, so the total length shrinks. If we do this forever, the total length goes to exactly zero. Yet there are infinitely many points left behind—not just the endpoints of the cuts! It's dust.</p>
+          </div>
+          <div data-layer="equation">
+            <p>At step <span class="tex">n</span>, there are <span class="tex">2^n</span> line segments, each of length <span class="tex">(1/3)^n</span>. Total length is <span class="tex">(2/3)^n \to 0</span> as <span class="tex">n \to \infty</span>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="koch" aria-labelledby="s92">
+        <h2 id="s92">The Koch curve</h2>
+        <div class="prose">
+          <p>Now, instead of removing the middle third, we replace it with two sides of an equilateral triangle.
+          The shape grows spikes. At each step, every line segment turns into four smaller segments.</p>
+        </div>
+        <div class="sim">
+          <canvas class="fractal-stage" id="stage-koch" style="height:300px;"></canvas>
+          <div class="controls" id="koch-controls"></div>
+          <p class="readout" id="koch-read" aria-live="polite"></p>
+        </div>
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>Since we replace 1 segment with 4 segments (each 1/3 the length), the total length gets multiplied by 4/3 at each step. By the end, its length is infinity! Yet you can draw it inside a box.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="dimension" aria-labelledby="s93">
+        <h2 id="s93">Similarity dimension</h2>
+        <div class="prose">
+          <p>If you take a square and scale it down by a factor of 3, you need 9 copies to build the original square back (since <span class="tex">9 = 3^2</span>, the dimension is 2).
+          If you take a cube and scale it down by 3, you need 27 copies (<span class="tex">27 = 3^3</span>, dimension 3).
+          What about the Koch curve? Scale it down by 3, and you need exactly 4 copies to build the original curve.</p>
+        </div>
+        <div class="sim">
+          <p class="readout">The Koch curve is self-similar. Drag the glass to zoom in 3x.</p>
+          <canvas class="glass" id="glass-koch"></canvas>
+        </div>
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>It's more than a 1D line because a normal line scaled down by 3 needs only 3 copies to rebuild it. The Koch curve needs 4. But it's less than a 2D square (which needs 9). Its dimension is a fraction!</p>
+          </div>
+          <div data-layer="equation">
+            <p>The <strong>similarity dimension</strong> <span class="tex">d</span> solves <span class="tex">N = r^d</span>, where <span class="tex">N</span> is the number of copies and <span class="tex">r</span> is the scale factor. So <span class="tex">d = \frac{\ln N}{\ln r}</span>.</p>
+            <p>For Koch: <span class="tex">N = 4, r = 3 \implies d = \frac{\ln 4}{\ln 3} \approx 1.26</span>.</p>
+            <p>For Cantor: <span class="tex">N = 2, r = 3 \implies d = \frac{\ln 2}{\ln 3} \approx 0.63</span>.</p>
+          </div>
+        </div>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
