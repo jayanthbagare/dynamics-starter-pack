@@ -4,6 +4,9 @@
 //     select: (state) => ({
 //       series: [{ values: [x0, x1, …], role: 'main' | 'ghost', label: 'start 0.9' }],  // label optional
 //                                       // style: 'twin' draws a series dashed with hollow dots
+//                                       // times: [t0, t1, …] places points in continuous time
+//                                       //   (then nMax is the right edge in time units)
+//                                       // dots: false draws a line only (e.g. an exact solution)
 //       nMax: 30,                       // right edge of the time axis
 //       yRange: [0, 2],                 // values outside are clipped, drawn as an edge marker
 //       fixedLines: [{ y: 0.739, kind: 'stable' }],   // optional
@@ -37,7 +40,7 @@ export function createTimeseries(canvas, store, { select, hoverKey = null, xLabe
     ctx.clearRect(0, 0, w, h);
     drawAxes(ctx, T, {
       x, y, box, xLabel, yLabel,
-      xTicks: ticks(0, nMax, 6).filter(Number.isInteger),
+      xTicks: d.series.some((s) => s.times) ? ticks(0, nMax, 6) : ticks(0, nMax, 6).filter(Number.isInteger),
       yTicks: log ? logTicks(y0, y1) : ticks(y0, y1, 5),
       yFormat: log ? pow10 : undefined,
     });
@@ -120,6 +123,7 @@ function drawSeries(ctx, T, s, x, y, [y0, y1], box, highlight) {
   const main = s.role === 'main';
   const twin = s.style === 'twin';
   const colour = twin ? T.highlight : main ? T.trajectory : T.muted;
+  const tOf = (n) => (s.times ? s.times[n] : n);
   ctx.save();
   ctx.strokeStyle = colour; ctx.fillStyle = colour;
   ctx.globalAlpha = main ? 1 : 0.45;
@@ -131,23 +135,23 @@ function drawSeries(ctx, T, s, x, y, [y0, y1], box, highlight) {
   let pen = false;
   s.values.forEach((v, n) => {
     const inRange = Number.isFinite(v) && v >= y0 && v <= y1;
-    if (inRange) { pen ? ctx.lineTo(x(n), y(v)) : ctx.moveTo(x(n), y(v)); pen = true; }
+    if (inRange) { pen ? ctx.lineTo(x(tOf(n)), y(v)) : ctx.moveTo(x(tOf(n)), y(v)); pen = true; }
     else pen = false;
   });
   ctx.stroke();
   ctx.setLineDash([]);
 
   const r = main ? 3 : 2;
-  s.values.forEach((v, n) => {
+  if (s.dots !== false) s.values.forEach((v, n) => {
     if (Number.isNaN(v)) return;
     if (v > y1 || v < y0) { // clipped: small triangle on the edge, pointing the way it went
       const up = v > y1, py = up ? box.top - 2 : box.bottom + 2, dir = up ? 1 : -1;
       ctx.beginPath();
-      ctx.moveTo(x(n), py - dir * 5); ctx.lineTo(x(n) - 4, py + dir * 2); ctx.lineTo(x(n) + 4, py + dir * 2);
+      const tx = x(tOf(n)); ctx.moveTo(tx, py - dir * 5); ctx.lineTo(tx - 4, py + dir * 2); ctx.lineTo(tx + 4, py + dir * 2);
       ctx.closePath(); ctx.fill();
       return;
     }
-    ctx.beginPath(); ctx.arc(x(n), y(v), twin ? r + 0.5 : r, 0, 2 * Math.PI);
+    ctx.beginPath(); ctx.arc(x(tOf(n)), y(v), twin ? r + 0.5 : r, 0, 2 * Math.PI);
     if (twin) { ctx.save(); ctx.fillStyle = T.bg; ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore(); }
     else ctx.fill();
   });
@@ -156,7 +160,7 @@ function drawSeries(ctx, T, s, x, y, [y0, y1], box, highlight) {
     const v = s.values[highlight];
     if (v >= y0 && v <= y1) {
       ctx.globalAlpha = 1; ctx.strokeStyle = T.highlight; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(x(highlight), y(v), 6, 0, 2 * Math.PI); ctx.stroke();
+      ctx.beginPath(); ctx.arc(x(tOf(highlight)), y(v), 6, 0, 2 * Math.PI); ctx.stroke();
     }
   }
   ctx.restore();
@@ -170,7 +174,7 @@ function drawLabels(ctx, T, series, x, y, [y0, y1], box) {
     if (!s.label) continue;
     let last = -1;
     s.values.forEach((v, n) => { if (Number.isFinite(v) && v >= y0 && v <= y1) last = n; });
-    if (last >= 0) labels.push({ text: s.label, px: x(last), py: y(s.values[last]) - 8 });
+    if (last >= 0) labels.push({ text: s.label, px: x(s.times ? s.times[last] : last), py: y(s.values[last]) - 8 });
   }
   labels.sort((a, b) => a.py - b.py);
   for (let i = 1; i < labels.length; i++) {
