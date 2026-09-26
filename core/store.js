@@ -27,9 +27,12 @@ export function createStore(defaults, { urlKeys = [] } = {}) {
     });
   }
 
+  // Throttled, not debounced: at most one write per 150ms, always with the latest state.
+  // (A debounce would never fire while something animates a URL key every frame.)
   function writeURL() {
-    clearTimeout(urlTimer);
+    if (urlTimer) return;
     urlTimer = setTimeout(() => {
+      urlTimer = null;
       const url = new URL(location.href);
       for (const k of urlKeys) {
         if (state[k] === defaults[k]) url.searchParams.delete(k);
