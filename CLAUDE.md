@@ -100,7 +100,7 @@ Views receive a store and subscribe; they never own simulation state.
 - [x] M3 — bifurcation view → Ch 3
 - [x] M4 — vectorfield1d + landscape → Ch 4–5
 - [x] M5 — tracedet + phase2d → Ch 6
-- [ ] M6 — Ch 7
+- [x] M6 — Ch 7
 - [ ] M7 — scene3d → Ch 8
 
 ## Working rules for Claude Code
@@ -121,3 +121,4 @@ Views receive a store and subscribe; they never own simulation state.
 - 2026-09-26 — M3 shipped: views/bifurcation.js (live density-shaded build, click/drag/keys to pick, box zoom in URL); systems/hump.js (presets + natural-spline drawn hump); Ch 3 live (dial with 2- and 4-cycle predictions, live diagram with window presets, mark-your-own doublings → δ, draw-your-own hump with auto δ via superstable parameters: 4.669 for rounded tops, 7.285 flat top, none for tent).
 - 2026-09-26 — M4 shipped: vendored three.js r186; core/spline.js (shared), findZeros for flows; views vectorfield1d, landscape (3D V(x;r) with slice, balls, floor diagram), timeseries continuous time, bifurcation branches mode; Ch 4 live (phase line, drag f(x), Euler = logistic map with r = 1 + h) and Ch 5 live (sticky 3D stage; saddle-node + bottleneck, transcritical, pitchfork with tilt, subcritical hysteresis). Store URL writes now throttled.
 - 2026-09-26 — M5 shipped: systems/linear2d.js (eigen, classify, spring form); views phase2d (field, trajectories, eigen lines, particle cloud that idles off-screen) and tracedet (regions, snapping, thumbnails); Ch 6 live with the eigenvector primer (audience LA comfort still TBD, so primer included, open by default), uncoupled rates, eigenvector highways, and the trace–determinant map driving a spring. Centers drawn half-filled (neutral).
+- 2026-09-26 — M6 shipped: Ch 7 live (pendulum ↔ portrait on a cylinder with separatrix and damping, linearization zoom with Ch 6 map, competition with nullclines and separatrix, van der Pol limit cycle and relaxation, Hopf with radius diagram and eigenvalue point on the τ–Δ map). systems: pendulum (contract form), competition, vanderpol, hopf; core: findFixedPoints2D + Jacobian; phase2d: level sets, curves, wrap, live state; canvases skip redraws off-screen.
