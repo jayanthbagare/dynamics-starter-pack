@@ -12,6 +12,8 @@
 //       tangent: { x, slope },          // optional: tangent line at a fixed point
 //       highlight: 3,                   // optional: emphasise the move x₂ → x₃
 //       lineColour: 'parameter',        // optional: colour the graph as the thing being dialled
+//       twinPath: [y0, y1, …],          // optional: a second orbit, dashed with hollow dots
+//       points: [[x, y], …],            // optional: scatter (a return map); f may then be omitted
 //     }),
 //     seedKey: 'x0',                    // drag the ▲ on the x-axis, or focus + ←/→
 //     seedRange: [a, b],                // optional clamp for the seed (or a function of state)
@@ -33,7 +35,7 @@ export function createCobweb(canvas, store, { select, seedKey, seedRange = null,
     const box = { left: 44, top: 8, right: 44 + side, bottom: 8 + side };
     const x = scale([lo, hi], [box.left, box.right]);
     const y = scale([lo, hi], [box.bottom, box.top]);
-    const seed = seedKey ? s[seedKey] : d.path[0];
+    const seed = seedKey ? s[seedKey] : d.path?.[0];
     geom = { x, y, box, lo, hi, knob: null, seedPx: x(seed) };
 
     ctx.clearRect(0, 0, w, h);
@@ -48,16 +50,26 @@ export function createCobweb(canvas, store, { select, seedKey, seedRange = null,
     ctx.setLineDash([]);
 
     // graph of f, one sample per pixel
-    ctx.strokeStyle = d.lineColour === 'parameter' ? T.parameter : T.ink;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    let pen = false;
-    for (let px = box.left; px <= box.right; px += 1) {
-      const v = d.f(x.invert(px));
-      if (Number.isFinite(v) && Math.abs(v) < 1e6) { pen ? ctx.lineTo(px, y(v)) : ctx.moveTo(px, y(v)); pen = true; }
-      else pen = false;
+    if (d.f) {
+      ctx.strokeStyle = d.lineColour === 'parameter' ? T.parameter : T.ink;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      let pen = false;
+      for (let px = box.left; px <= box.right; px += 1) {
+        const v = d.f(x.invert(px));
+        if (Number.isFinite(v) && Math.abs(v) < 1e6) { pen ? ctx.lineTo(px, y(v)) : ctx.moveTo(px, y(v)); pen = true; }
+        else pen = false;
+      }
+      ctx.stroke();
     }
-    ctx.stroke();
+
+    // scatter of (xₙ, xₙ₊₁) pairs
+    if (d.points) {
+      ctx.fillStyle = T.trajectory;
+      for (const [px, py] of d.points) {
+        ctx.beginPath(); ctx.arc(x(px), y(py), 2.2, 0, 2 * Math.PI); ctx.fill();
+      }
+    }
 
     // tangent line at a fixed point
     if (d.tangent) {
@@ -69,7 +81,7 @@ export function createCobweb(canvas, store, { select, seedKey, seedRange = null,
     }
 
     // guide from the seed on the axis up to the diagonal
-    const path = d.path;
+    const path = d.path || [];
     if (Number.isFinite(path[0])) {
       ctx.save();
       ctx.strokeStyle = T.parameter; ctx.globalAlpha = 0.6; ctx.setLineDash([1, 3]);
@@ -78,13 +90,32 @@ export function createCobweb(canvas, store, { select, seedKey, seedRange = null,
     }
 
     // the cobweb: vertical to the curve, horizontal to the diagonal
-    const segs = [];
-    for (let i = 0; i + 1 < path.length; i++) {
-      const a = path[i], b = path[i + 1];
-      if (!Number.isFinite(a) || !Number.isFinite(b)) break;
-      segs.push([a, a, a, b], [a, b, b, b]);
-    }
+    const segments = (p) => {
+      const out = [];
+      for (let i = 0; i + 1 < p.length; i++) {
+        const a = p[i], b = p[i + 1];
+        if (!Number.isFinite(a) || !Number.isFinite(b)) break;
+        out.push([a, a, a, b], [a, b, b, b]);
+      }
+      return out;
+    };
+    const segs = segments(path);
     const shown = Math.min(segs.length, d.halfSteps ?? segs.length);
+
+    if (d.twinPath) { // drawn first and dashed, so the main path stays readable where they overlap
+      const tsegs = segments(d.twinPath).slice(0, d.halfSteps ?? Infinity);
+      ctx.save();
+      ctx.strokeStyle = T.highlight; ctx.lineWidth = 1.5; ctx.setLineDash([5, 3]);
+      ctx.beginPath();
+      for (const [x1, y1, x2, y2] of tsegs) { ctx.moveTo(x(x1), y(y1)); ctx.lineTo(x(x2), y(y2)); }
+      ctx.stroke();
+      if (tsegs.length) {
+        const [, , x2, y2] = tsegs.at(-1);
+        ctx.setLineDash([]); ctx.fillStyle = T.bg;
+        ctx.beginPath(); ctx.arc(x(x2), y(y2), 4, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      }
+      ctx.restore();
+    }
     ctx.strokeStyle = T.trajectory; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
     ctx.beginPath();
     for (let i = 0; i < shown; i++) {
