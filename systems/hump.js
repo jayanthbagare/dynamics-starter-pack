@@ -7,6 +7,8 @@
 // A drawn hump is a natural cubic spline through the heights: its curvature is continuous, so the
 // top of the hump is smooth (that matters for universality in Chapter 3).
 
+import { naturalSpline } from '../core/spline.js';
+
 export const NODES = 7;
 
 export const presets = {
@@ -50,40 +52,14 @@ export const presetHeights = (name) =>
 
 export const encodeHeights = (hs) => hs.map((y) => +y.toFixed(3)).join(',');
 
-// Natural cubic spline through (k/6, y_k), clamped at 0, plus its exact highest point.
+// A drawn hump: the spline through the heights, clamped at 0, and its exact highest point.
 function spline(ys) {
-  const n = ys.length, dx = 1 / (n - 1);
-  // second derivatives M_k: M_0 = M_{n-1} = 0, tridiagonal system solved by the Thomas algorithm
-  const M = new Array(n).fill(0), c = new Array(n).fill(0), d = new Array(n).fill(0);
-  for (let k = 1; k < n - 1; k++) {
-    const rhs = (6 / (dx * dx)) * (ys[k + 1] - 2 * ys[k] + ys[k - 1]);
-    const m = 4 - c[k - 1];
-    c[k] = 1 / m;
-    d[k] = (rhs - d[k - 1]) / m;
-  }
-  for (let k = n - 2; k >= 1; k--) M[k] = d[k] - c[k] * M[k + 1];
-
-  const seg = (x) => Math.min(n - 2, Math.max(0, Math.floor(x / dx)));
-  const cubic = (k, x) => {
-    const a = (k + 1) * dx - x, b = x - k * dx;
-    return (M[k] * a ** 3 + M[k + 1] * b ** 3) / (6 * dx)
-      + (ys[k] / dx - (M[k] * dx) / 6) * a + (ys[k + 1] / dx - (M[k + 1] * dx) / 6) * b;
-  };
-  const f = (x) => Math.max(0, cubic(seg(x), x));
-
-  // highest point: nodes, plus zeros of each segment's (quadratic) derivative
+  const sp = naturalSpline(0, 1, ys);
+  const f = (x) => Math.max(0, sp.f(x));
   let peak = 0, best = -Infinity;
-  const consider = (x) => { const v = f(x); if (v > best) { best = v; peak = x; } };
-  for (let k = 0; k < n; k++) consider(k * dx);
-  for (let k = 0; k < n - 1; k++) {
-    // d/dx of the cubic = A b² + B b + C, with b = x - k·dx
-    const A = (M[k + 1] - M[k]) / (2 * dx);
-    const B = M[k];
-    const C = (ys[k + 1] - ys[k]) / dx - (dx / 6) * (2 * M[k] + M[k + 1]);
-    const roots = Math.abs(A) < 1e-14 ? (Math.abs(B) < 1e-14 ? [] : [-C / B])
-      : (() => { const D = B * B - 4 * A * C; if (D < 0) return [];
-          const q = Math.sqrt(D); return [(-B + q) / (2 * A), (-B - q) / (2 * A)]; })();
-    for (const b of roots) if (b > 0 && b < dx) consider(k * dx + b);
+  for (const x of [...ys.map((_, k) => k / (ys.length - 1)), ...sp.critical()]) {
+    const v = f(x);
+    if (v > best) { best = v; peak = x; }
   }
   return { f, peak };
 }
