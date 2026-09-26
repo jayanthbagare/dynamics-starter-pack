@@ -15,8 +15,8 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
   <link rel="stylesheet" href="../../styles/base.css">
   <style>
-    .fractal-stage { display: block; width: 100%; height: 200px; touch-action: pan-y; margin-bottom: var(--s-3); background: var(--surface-raised); border-radius: var(--radius); }
-    .glass { display: block; width: 100%; height: 300px; touch-action: none; cursor: crosshair; }
+    .fractal-stage { display: block; width: 100%; height: 220px; }
+    .glass { display: block; width: 100%; height: 320px; touch-action: none; cursor: crosshair; }
   </style>
 </head>
 <body>
@@ -40,13 +40,16 @@
         </div>
         <div id="predict-cantor"></div>
         <div class="sim">
-          <canvas class="fractal-stage" id="stage-cantor"></canvas>
+          <canvas class="fractal-stage" id="stage-cantor" role="img" aria-label="The Cantor set, one row of pieces per generation"></canvas>
           <div class="controls" id="cantor-controls"></div>
           <p class="readout" id="cantor-read" aria-live="polite"></p>
         </div>
         <div class="layers">
           <div data-layer="intuition">
-            <p>At each step we take out a chunk, so the total length shrinks. If we do this forever, the total length goes to exactly zero. Yet there are infinitely many points left behind—not just the endpoints of the cuts! It's dust.</p>
+            <p>At each step we take out a chunk, so the total length shrinks. If we do this forever, the total length goes to exactly zero. Yet there are infinitely many points left behind — not just the endpoints of the cuts! It's dust.</p>
+          </div>
+          <div data-layer="picture">
+            <p>Drag the slider up. Each row is one more round of cutting; the pieces double in number and shrink three times faster. By <span class="tex">n = 7</span> the row is 128 slivers totalling 0.058 of the original length — and the cutting has only just begun.</p>
           </div>
           <div data-layer="equation">
             <p>At step <span class="tex">n</span>, there are <span class="tex">2^n</span> line segments, each of length <span class="tex">(1/3)^n</span>. Total length is <span class="tex">(2/3)^n \to 0</span> as <span class="tex">n \to \infty</span>.</p>
@@ -61,13 +64,19 @@
           The shape grows spikes. At each step, every line segment turns into four smaller segments.</p>
         </div>
         <div class="sim">
-          <canvas class="fractal-stage" id="stage-koch" style="height:300px;"></canvas>
+          <canvas class="fractal-stage" id="stage-koch" style="height:280px;" role="img" aria-label="The Koch curve, one fold per generation"></canvas>
           <div class="controls" id="koch-controls"></div>
           <p class="readout" id="koch-read" aria-live="polite"></p>
         </div>
         <div class="layers">
           <div data-layer="intuition">
             <p>Since we replace 1 segment with 4 segments (each 1/3 the length), the total length gets multiplied by 4/3 at each step. By the end, its length is infinity! Yet you can draw it inside a box.</p>
+          </div>
+          <div data-layer="picture">
+            <p>Drag the slider up and watch the readout: the length climbs past 1×, 2×, 4× the original and keeps going. By <span class="tex">n = 4</span> the crinkles are smaller than the pixels — but the length is still growing.</p>
+          </div>
+          <div data-layer="equation">
+            <p>After <span class="tex">n</span> folds there are <span class="tex">4^n</span> segments of length <span class="tex">3^{-n}</span>, so the length is <span class="tex">(4/3)^n \to \infty</span> as <span class="tex">n \to \infty</span>.</p>
           </div>
         </div>
       </section>
@@ -80,8 +89,8 @@
           What about the Koch curve? Scale it down by 3, and you need exactly 4 copies to build the original curve.</p>
         </div>
         <div class="sim">
-          <p class="readout">The Koch curve is self-similar. Drag the glass to zoom in 3x.</p>
-          <canvas class="glass" id="glass-koch"></canvas>
+          <p class="readout">The Koch curve is self-similar: move the pointer over it to zoom 3×.</p>
+          <canvas class="glass" id="glass-koch" role="img" aria-label="A magnifying glass showing the Koch curve contains four copies of itself at one-third scale"></canvas>
         </div>
         <div class="layers">
           <div data-layer="intuition">

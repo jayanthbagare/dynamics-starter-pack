@@ -40,7 +40,7 @@
       cursor: crosshair;
     }
     .orbit-view {
-      background: var(--surface-raised);
+      background: var(--surface);
       border-radius: var(--radius);
       aspect-ratio: 1;
     }
@@ -71,17 +71,20 @@
           If the sequence stays small forever, we color the point <span class="tex">c</span> black. If it escapes, we color it based on how fast it ran away.</p>
         </div>
         
-        <p class="readout">Drag to pan. Scroll or pinch to zoom. Tap or hover to see the orbit.</p>
-        
+        <p class="readout">Drag to pan. Scroll or pinch to zoom. Hover or touch to watch one orbit.</p>
+
         <div class="mandel-stage">
           <div class="mandel-view">
-            <canvas id="mandel-canvas"></canvas>
+            <canvas id="mandel-canvas" aria-label="The Mandelbrot set; points whose orbits stay bounded are black"></canvas>
           </div>
           <div>
             <div class="orbit-view">
-              <canvas id="orbit-canvas"></canvas>
+              <canvas id="orbit-canvas" role="img" aria-label="The orbit of z squared plus c in the complex plane, with the escape circle drawn"></canvas>
             </div>
-            <p class="readout" id="orbit-read" style="margin-top:var(--s-2)">Hover over the set...</p>
+            <p class="readout" id="orbit-read" style="margin-top:var(--s-2)" aria-live="polite">hover or drag over the set to watch one orbit…</p>
+            <div class="controls">
+              <button class="button quiet" type="button" id="reset-view">Reset view</button>
+            </div>
           </div>
         </div>
 

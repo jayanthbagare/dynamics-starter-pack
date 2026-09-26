@@ -1,86 +1,93 @@
-import { createStore } from '../../core/store.js';
+// Chapter 9 · The Cantor set & fractal dimension
+// One store drives the Cantor construction, the Koch construction, and the magnifying glass.
+
 import { mountLayout } from '../../core/layout.js';
-import { attachSlider } from '../../ui/slider.js';
-import { attachPredictThenPress } from '../../ui/predict-then-press.js';
-import { mountMathLayers } from '../../ui/math-layers.js';
-import { mountLens } from '../../ui/strogatz-lens.js';
-import { mountPresenterMode } from '../../ui/presenter-mode.js';
-import { FractalBuilder } from '../../views/fractal-builder.js';
+import { createStore } from '../../core/store.js';
+import { createSlider } from '../../ui/slider.js';
+import { createPredict } from '../../ui/predict-then-press.js';
+import { initMathLayers } from '../../ui/math-layers.js';
+import { renderLens } from '../../ui/strogatz-lens.js';
+import { createFractalBuilder } from '../../views/fractal-builder.js';
 
-mountLayout();
-mountPresenterMode();
+mountLayout({ chapter: 9 });
 
-const store = createStore({
-  cantorGen: 0,
-  kochGen: 0
-});
+const $ = (id) => document.getElementById(id);
 
-// Predict: Cantor
-attachPredictThenPress(document.getElementById('predict-cantor'), {
-  id: 'cantor-fate',
-  question: 'What is the total length of the remaining pieces as we repeat this forever?',
+const store = createStore(
+  { cantorGen: 4, kochGen: 3 },
+  { urlKeys: ['cantorGen', 'kochGen'] },
+);
+
+// --- §11.1 the Cantor set -------------------------------------------------------------------
+
+createPredict($('predict-cantor'), {
+  question: 'Repeat the cut forever. What happens to what’s left?',
   options: [
-    { value: 'half', label: '1/2', text: 'It settles to exactly half the original length.' },
-    { value: 'zero', label: '0', text: 'The length goes to zero, leaving only points.' },
-    { value: 'inf', label: 'Infinity', text: 'The number of pieces explodes.' }
+    { value: 'half', label: 'it settles at half the original length' },
+    { value: 'zero', label: 'the total length goes to zero, but points survive' },
+    { value: 'dust', label: 'only the endpoints of the cuts survive, a countable dust' },
   ],
-  onReveal: () => {
-    store.set({ cantorGen: 6 });
-  }
+  pressLabel: 'Cut forever',
+  onPress: async () => {
+    for (let n = store.get().cantorGen; n <= 7; n++) {
+      store.set({ cantorGen: n });
+      await new Promise((r) => setTimeout(r, 240));
+    }
+    return 'zero';
+  },
+  explain: () => `<p>At step <span class="tex">n</span> there are <span class="tex">2^n</span> pieces of length
+    <span class="tex">3^{-n}</span>, so the total length is <span class="tex">(2/3)^n \\to 0</span>. And yet the
+    leftovers are far more than endpoints: any address made of endless left/right choices, like
+    <span class="tex">0.202020…_3</span>, survives. Zero length, uncountably many points.</p>`,
+  onReset: () => store.set({ cantorGen: 4 }),
 });
 
-// Cantor UI
-const cantorControls = document.getElementById('cantor-controls');
-attachSlider(cantorControls, {
-  id: 'cantorGen', label: 'Generation', min: 0, max: 7, step: 1, value: store.get().cantorGen,
-  onChange: (val) => store.set({ cantorGen: val })
+createSlider($('cantor-controls'), store, {
+  key: 'cantorGen', label: 'cuts n', min: 0, max: 7, step: 1, format: (v) => String(v),
 });
-const cantorRead = document.getElementById('cantor-read');
-store.subscribe(s => {
-  const pieces = Math.pow(2, s.cantorGen);
-  const length = Math.pow(2/3, s.cantorGen).toFixed(3);
-  cantorRead.textContent = `n = ${s.cantorGen}: ${pieces} pieces, total length = ${length}`;
+createSlider($('koch-controls'), store, {
+  key: 'kochGen', label: 'folds n', min: 0, max: 6, step: 1, format: (v) => String(v),
 });
 
-// Koch UI
-const kochControls = document.getElementById('koch-controls');
-attachSlider(kochControls, {
-  id: 'kochGen', label: 'Generation', min: 0, max: 6, step: 1, value: store.get().kochGen,
-  onChange: (val) => store.set({ kochGen: val })
-});
-const kochRead = document.getElementById('koch-read');
-store.subscribe(s => {
-  const pieces = Math.pow(4, s.kochGen);
-  const length = Math.pow(4/3, s.kochGen).toFixed(2);
-  kochRead.textContent = `n = ${s.kochGen}: ${pieces} pieces, total length = ${length}`;
-});
+// --- views -----------------------------------------------------------------------------------
 
-// Views
-const stageCantor = document.getElementById('stage-cantor');
-const stageKoch = document.getElementById('stage-koch');
-const glassKoch = document.getElementById('glass-koch');
+const cantorView = createFractalBuilder($('stage-cantor'), { type: 'cantor' });
+const kochView = createFractalBuilder($('stage-koch'), { type: 'koch' });
+const glassView = createFractalBuilder($('glass-koch'), { type: 'koch-glass' });
 
-const viewCantor = new FractalBuilder(stageCantor, { type: 'cantor' });
-const viewKoch = new FractalBuilder(stageKoch, { type: 'koch' });
-const viewGlass = new FractalBuilder(glassKoch, { type: 'koch-glass' });
+function render(s) {
+  cantorView.render(s.cantorGen);
+  kochView.render(s.kochGen);
+  glassView.render(5);
+  $('cantor-read').textContent =
+    `n = ${s.cantorGen} · ${2 ** s.cantorGen} pieces · total length = ${((2 / 3) ** s.cantorGen).toFixed(4)} of the original`;
+  $('koch-read').textContent =
+    `n = ${s.kochGen} · ${4 ** s.kochGen} segments · length = ${((4 / 3) ** s.kochGen).toFixed(3)} × the original`;
+}
 
-store.subscribe(s => {
-  viewCantor.render(s.cantorGen);
-  viewKoch.render(s.kochGen);
-  viewGlass.render(5); // Fixed high generation for glass
-});
+store.subscribe(render);
+render(store.get());
 
-mountMathLayers();
-mountLens(document.getElementById('lens'), {
-  readNext: 'Strogatz §11.1–11.3 (Fractals and the Cantor Set, Similarity Dimension).',
+// --- Strogatz lens ----------------------------------------------------------------------------
+
+initMathLayers();
+renderLens($('lens'), {
+  read: [
+    { ref: '§11.1', note: 'Countable and uncountable sets; the Cantor set' },
+    { ref: '§11.2', note: 'Dimension of fractals, and the similarity dimension used here' },
+    { ref: '§11.3', note: 'Box dimension — a second way to measure the same idea' },
+  ],
   notation: [
-    { tex: 'd', desc: 'similarity dimension' },
-    { tex: 'N', desc: 'number of small copies needed to build the whole' },
-    { tex: 'r', desc: 'scale factor by which each copy is shrunk' }
+    ['<span class="tex">d</span>', '<span class="tex">d</span>', 'similarity dimension'],
+    ['<span class="tex">N = r^d</span>', '<span class="tex">N(\\varepsilon) \\sim \\varepsilon^{-d}</span>', 'N copies at scale 1/r'],
+    ['Cantor: <span class="tex">N = 2,\\ r = 3</span>', 'example 11.2.1', '<span class="tex">d = \\ln 2 / \\ln 3 \\approx 0.63</span>'],
+    ['Koch: <span class="tex">N = 4,\\ r = 3</span>', 'example 11.2.2', '<span class="tex">d = \\ln 4 / \\ln 3 \\approx 1.26</span>'],
   ],
   exercises: [
-    'For the Cantor set, what happens to the dimension if instead of removing the middle third, you remove the middle half? Use the similarity dimension formula to find out.',
-    'Imagine a square where you divide it into 9 smaller squares (a 3x3 grid) and remove the middle one, leaving 8. If you repeat this forever on the remaining squares (the Sierpinski carpet), what is its similarity dimension?',
-    'The Koch curve has a length that goes to infinity. What happens to the area under the Koch curve as n goes to infinity? Is it infinite too?'
-  ]
+    { html: 'Cut the middle <em>half</em> of each piece instead of the middle third. Sketch three steps by hand, then work out its similarity dimension. Which is “bigger”, this set or the middle-thirds Cantor set?',
+      sim: '?cantorGen=7' },
+    { html: 'Divide a square into a 3 × 3 grid and remove the centre square; repeat forever on the survivors (the Sierpinski carpet). Count <span class="tex">N</span> and <span class="tex">r</span> and find <span class="tex">d</span>. Sanity-check it against the Koch curve’s 1.26.' },
+    { html: 'The Koch curve’s length grows by 4/3 at every fold, yet the snowflake it bounds has <em>finite</em> area. Watch the length readout race upwards, then explain what the area does instead — and what dimension has to do with the difference.',
+      sim: '?kochGen=6' },
+  ],
 });

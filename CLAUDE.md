@@ -71,7 +71,7 @@ Sections to read next, notation mapping, and **three original exercises** that u
 /core/layout.js             shared header/nav/footer include
 /systems/*.js               one file per system
 /views/*.js                 timeseries, cobweb, bifurcation, vectorfield1d, landscape,
-                            phase2d, tracedet, scene3d
+                            phase2d, tracedet, scene3d, fractal-builder, mandelbrot-view
 /ui/*.js                    slider, predict-then-press, presenter-mode, strogatz-lens,
                             math-layers toggle
 /styles/base.css            tokens (colors, type, spacing), themes
@@ -126,4 +126,4 @@ Views receive a store and subscribe; they never own simulation state.
 - 2026-09-26 — M5 shipped: systems/linear2d.js (eigen, classify, spring form); views phase2d (field, trajectories, eigen lines, particle cloud that idles off-screen) and tracedet (regions, snapping, thumbnails); Ch 6 live with the eigenvector primer (audience LA comfort still TBD, so primer included, open by default), uncoupled rates, eigenvector highways, and the trace–determinant map driving a spring. Centers drawn half-filled (neutral).
 - 2026-09-26 — M6 shipped: Ch 7 live (pendulum ↔ portrait on a cylinder with separatrix and damping, linearization zoom with Ch 6 map, competition with nullclines and separatrix, van der Pol limit cycle and relaxation, Hopf with radius diagram and eigenvalue point on the τ–Δ map). systems: pendulum (contract form), competition, vanderpol, hopf; core: findFixedPoints2D + Jacobian; phase2d: level sets, curves, wrap, live state; canvases skip redraws off-screen.
 - 2026-09-26 — M7 shipped, v1 complete: systems/lorenz.js; views/scene3d.js (10k-point cloud, fading trajectory, markers) and shared views/orbit-camera.js; Ch 8 live (Lorenz in 3D with r dial, waterwheel drawn from the Lorenz state, 10,000-particle ball with log-scale spread and ruler at 60 fps, peak-to-peak Lorenz map with cobweb and Ch 3 tent, closing-the-loop recap). README updated for v1.
-- 2026-09-26 — M8 shipped, v2 Part III Fractals: Ch 9 live (Cantor set, Koch curve, similarity dimension with 3x magnifying glass); Ch 10 live (Mandelbrot set with WebGL fragment shader, linked complex plane orbit view); systems updated; README updated for v2.
+- 2026-09-26 — M8 shipped, v2 Part III Fractals: Ch 9 live (Cantor set, Koch curve, similarity dimension with 3x magnifying glass); Ch 10 live (Mandelbrot set with WebGL fragment shader, linked complex plane orbit view); systems/mandelbrot.js; views fractal-builder + mandelbrot-view on shared canvas plumbing; layout nav extended to Ch 10; README updated for v2.

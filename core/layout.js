@@ -21,6 +21,8 @@ export const chapters = [
   { n: 6, folder: '06-linear',          title: 'Linear systems',             live: true  },
   { n: 7, folder: '07-phase-plane',     title: 'The phase plane',            live: true  },
   { n: 8, folder: '08-lorenz',          title: 'Lorenz: closing the loop',   live: true  },
+  { n: 9, folder: '09-fractal-dimension', title: 'The Cantor set & fractal dimension', live: true },
+  { n: 10, folder: '10-mandelbrot',     title: 'The Mandelbrot set',         live: true  },
 ];
 
 export const chapterURL = (c) => new URL(`chapters/${c.folder}/`, ROOT).href;
