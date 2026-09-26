@@ -4,7 +4,17 @@
 export function setupCanvas(canvas, draw) {
   const ctx = canvas.getContext('2d');
   const size = { w: 0, h: 0 };
-  const redraw = () => { if (size.w > 0) draw(ctx, size); };
+  // Off-screen canvases skip redraws (they can be expensive) and catch up when they scroll into view.
+  let visible = true, stale = false;
+  const redraw = () => {
+    if (!visible) { stale = true; return; }
+    stale = false;
+    if (size.w > 0) draw(ctx, size);
+  };
+  new IntersectionObserver(([e]) => {
+    visible = e.isIntersecting;
+    if (visible && stale) redraw();
+  }, { rootMargin: '200px' }).observe(canvas);
 
   new ResizeObserver(() => {
     const r = canvas.getBoundingClientRect();
