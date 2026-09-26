@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 2 · The butterfly effect · Dynamics Starter Pack</title>
+  <meta name="description" content="Two starts a ten-millionth apart end up unrelated. Measure how fast, find the forecast horizon, and tell chaos from randomness.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    .pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-3); }
+    @media (max-width: 44rem) { .pair { grid-template-columns: minmax(0, 1fr); } }
+    .panel-label { font-family: var(--font-mono); font-size: var(--fs-small); color: var(--ink-muted); margin: 0 0 var(--s-1); }
+    .panel-label strong { color: var(--ink); font-size: 1rem; }
+    canvas.plot.short { height: 160px; }
+    .veil { position: relative; }
+    .veil[data-veiled] > *:not(.veil-note) { visibility: hidden; }
+    .veil-note { display: none; }
+    .veil[data-veiled] .veil-note {
+      display: flex; align-items: center; justify-content: center;
+      position: absolute; inset: 0;
+      font-family: var(--font-mono); font-size: var(--fs-small); color: var(--ink-muted);
+      border: 1px dashed var(--rule); border-radius: var(--radius);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 2 · Strogatz §9.3, §10.5</p>
+        <h1>The butterfly effect</h1>
+        <p class="lede">
+          Nothing in this chapter is random. The rule is a single line of arithmetic, and you
+          can run it as often as you like. Even so, you won’t be able to predict it for long.
+        </p>
+      </header>
+
+      <section id="twins" aria-labelledby="s21">
+        <h2 id="s21">Twins</h2>
+        <div class="prose">
+          <p>The rule for this chapter is <span class="tex">x \mapsto 4x(1-x)</span>, a hump over
+            <span class="tex">[0, 1]</span> like the cos curve in Chapter 1. It has two fixed points,
+            and both are hollow: the slope is 4 at 0 and −2 at 0.75. There’s nowhere to settle.</p>
+          <p>Start two runs almost together, one at 0.4 and its twin a ten-millionth away. Guess first.</p>
+        </div>
+
+        <div id="predict-twins"></div>
+
+        <div class="sim">
+          <div class="sim-grid">
+            <canvas class="square" id="web-twins" aria-describedby="twins-cap"></canvas>
+            <div>
+              <canvas class="plot tall" id="ts-twins" role="img" aria-label="Time series of the two twin runs"></canvas>
+              <div class="controls">
+                <button class="button primary" type="button" id="step" data-primary>Step</button>
+                <button class="button" type="button" id="play">Play</button>
+                <button class="button quiet" type="button" id="reset">Reset</button>
+              </div>
+              <div class="controls" id="twin-controls">
+                <div class="choice" role="radiogroup" aria-label="Which rule" id="r-choice">
+                  <label><input type="radio" name="r" value="2.8"><span>calm · r = 2.8</span></label>
+                  <label><input type="radio" name="r" value="4"><span>chaotic · r = 4</span></label>
+                </div>
+              </div>
+              <p class="caption" id="twins-cap" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+        <p class="aside">Switch to <em>calm</em>: the same tiny gap, the same kind of hump, but a lower one.
+          Now the twins slide into a filled dot together and stay there. Sensitivity belongs to the
+          rule, not to the start.</p>
+      </section>
+
+      <section id="gap" aria-labelledby="s22">
+        <h2 id="s22">Measure the gap</h2>
+        <div class="prose">
+          <p>How fast do the twins separate? Plot the distance between them, <span class="tex">|x_n - y_n|</span>,
+            on a <strong>log scale</strong>, where each gridline is ten times the one below.</p>
+        </div>
+
+        <div id="predict-gap"></div>
+
+        <div class="sim veil" id="gap-sim" data-veiled>
+          <p class="veil-note">make your prediction first</p>
+          <canvas class="plot tall" id="ts-gap" role="img" aria-label="Distance between the twins on a log scale, with an adjustable ruler line"></canvas>
+          <div class="controls" id="ruler-controls"></div>
+          <p class="readout" id="ruler-read" aria-live="polite"></p>
+        </div>
+
+        <div class="layers">
+          <div data-layer="intuition">
+            <p>The gap roughly <strong>doubles every step</strong>. Doubling is slow at first and then very
+              fast. Starting from a ten-millionth, 23 doublings reach 1, since 2²³ is about 8 million. That’s why the
+              twins agree for about twenty steps and then have nothing in common.</p>
+            <p>Once the gap is as big as the hump itself, it can’t grow any more. That’s the flat ceiling.</p>
+          </div>
+          <div data-layer="picture">
+            <p>On a log scale, steady multiplication is a <strong>straight line</strong>. The slope of the
+              line is the multiplier per step. Tilt the ruler until it lies along the gap’s rise.</p>
+          </div>
+          <div data-layer="equation">
+            <p>Call the gap <span class="tex">\delta_n = y_n - x_n</span>. It grows exponentially:</p>
+            <p class="tex-display">|\delta_n| \approx |\delta_0|\, e^{\lambda n}.</p>
+            <p><span class="tex">\lambda</span> is the <strong>Liapunov exponent</strong>. For
+              <span class="tex">4x(1-x)</span>, <span class="tex">\lambda = \ln 2 \approx 0.693</span>: the gap doubles
+              each step on average. <span class="tex">\lambda &gt; 0</span> is what “chaotic” means.
+              The gap reaches size <span class="tex">a</span> after about</p>
+            <p class="tex-display">n_{\text{horizon}} \approx \frac{1}{\lambda}\ln\frac{a}{|\delta_0|}\ \text{steps}.</p>
+          </div>
+        </div>
+
+        <div class="sim">
+          <p class="panel-label"><strong>Your computer is a butterfly too.</strong>
+            <span class="tex">4x(1-x)</span> and <span class="tex">4x - 4x^2</span> are the same rule. Run both from exactly 0.4.</p>
+          <div class="controls" style="margin-top:var(--s-2)">
+            <button class="button" type="button" id="alt-toggle" aria-pressed="false">Compare the two ways of writing it</button>
+          </div>
+          <p class="caption" id="alt-cap" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="forecast" aria-labelledby="s23">
+        <h2 id="s23">The forecaster</h2>
+        <div class="prose">
+          <p>Somewhere there is a true starting value, known to every digit. You get to measure it, but only
+            to a limited number of decimal places. Then you forecast by running the rule from your measurement.
+            Your forecast counts as good while it stays within 0.1 of the truth.</p>
+        </div>
+
+        <div id="predict-forecast"></div>
+
+        <div class="sim">
+          <canvas class="plot tall" id="ts-forecast" role="img" aria-label="Forecast against the truth"></canvas>
+          <div class="controls" id="forecast-controls">
+            <button class="button primary" type="button" id="run-forecast">Forecast</button>
+            <button class="button quiet" type="button" id="new-round">New round</button>
+          </div>
+          <p class="caption" id="forecast-cap" aria-live="polite"></p>
+
+          <h3 class="panel-label" style="margin-top:var(--s-4)">Horizon against digits: every forecast you run adds a point</h3>
+          <canvas class="plot" id="ts-horizons" role="img" aria-label="Forecast horizon plotted against number of digits measured"></canvas>
+          <div class="controls">
+            <button class="button quiet" type="button" id="clear-results">Clear points</button>
+          </div>
+          <p class="readout" id="horizon-read" aria-live="polite"></p>
+        </div>
+        <p class="aside">A catch: the “truth” here is itself computed with about 16 digits, so after roughly 50 steps
+          even the truth is fiction. No computer can follow this rule exactly for long.</p>
+      </section>
+
+      <section id="random" aria-labelledby="s24">
+        <h2 id="s24">Random or rule?</h2>
+        <div class="prose">
+          <p>One of these sequences comes from a random number generator. The other comes from
+            <span class="tex">4x(1-x)</span>. Which is which?</p>
+        </div>
+        <div class="sim">
+          <div class="pair">
+            <div><p class="panel-label"><strong>A</strong></p><canvas class="plot short" id="ts-A" role="img" aria-label="Sequence A"></canvas></div>
+            <div><p class="panel-label"><strong>B</strong></p><canvas class="plot short" id="ts-B" role="img" aria-label="Sequence B"></canvas></div>
+          </div>
+          <div class="controls">
+            <span class="caption" style="margin:0">Your gut: the rule is…</span>
+            <button class="button" type="button" data-guess="A">A</button>
+            <button class="button" type="button" data-guess="B">B</button>
+            <span class="caption" id="guess-cap" style="margin:0" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <div id="predict-return"></div>
+
+        <div class="sim">
+          <div class="pair">
+            <div><p class="panel-label"><strong>A</strong> as pairs (xₙ, xₙ₊₁)</p><canvas class="square" id="rm-A" role="img" aria-label="Return map of sequence A"></canvas></div>
+            <div><p class="panel-label"><strong>B</strong> as pairs (xₙ, xₙ₊₁)</p><canvas class="square" id="rm-B" role="img" aria-label="Return map of sequence B"></canvas></div>
+          </div>
+          <div class="controls">
+            <button class="button" type="button" id="plot-pairs">Plot as pairs</button>
+            <label class="caption" style="margin:0"><input type="checkbox" id="overlay"> overlay the hump y = 4x(1−x)</label>
+          </div>
+          <p class="caption" id="return-cap" aria-live="polite"></p>
+        </div>
+        <p class="aside">Chaos looks random over time, but each step is completely determined by the one
+          before. Plot consecutive values as pairs and the rule shows up as a curve.</p>
+      </section>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
