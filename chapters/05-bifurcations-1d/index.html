@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ch 5 · Bifurcations in 1D flows · Dynamics Starter Pack</title>
+  <meta name="description" content="Tilt a landscape until valleys merge and vanish: saddle-node, transcritical and pitchfork bifurcations, and hysteresis.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%226%22 fill=%22%232e7a55%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../../styles/base.css">
+  <style>
+    .wrap.wide { max-width: 80rem; }
+    .scrolly { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: var(--s-5); align-items: start; }
+    .stage { position: sticky; top: var(--s-3); }
+    .stage .sim { margin: 0; }
+    @media (max-width: 62rem) {
+      .scrolly { grid-template-columns: minmax(0, 1fr); }
+      .stage { position: relative; top: 0; order: -1; }
+    }
+    canvas.land { display: block; width: 100%; height: 320px; touch-action: pan-y; cursor: grab; }
+    canvas.land:active { cursor: grabbing; }
+    canvas.line { display: block; width: 100%; height: 150px; touch-action: pan-y; }
+    canvas.branches { display: block; width: 100%; height: 260px; touch-action: pan-y; }
+    .legend3d { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-muted); margin: var(--s-1) 0 0; }
+    .story > section:first-child { margin-top: 0; }
+    body.presenter canvas.land { height: 460px; }
+  </style>
+</head>
+<body>
+  <div class="wrap wide">
+    <main>
+      <header class="chapter-head">
+        <p class="eyebrow">Chapter 5 · Strogatz Ch 3</p>
+        <h1>Bifurcations in 1D flows</h1>
+        <p class="lede">
+          Turn a dial on a flow and, at special values, fixed points appear, vanish or trade places. On
+          the line there are only a few ways this can happen, and each has a picture: a landscape that
+          tilts until its valleys change.
+        </p>
+      </header>
+
+      <div class="scrolly">
+        <div class="story">
+          <section id="landscape" aria-labelledby="s51">
+            <h2 id="s51">Landscapes</h2>
+            <div class="prose">
+              <p>Every flow on the line can be pictured as a ball in a very sticky landscape: it always moves downhill,
+                and stops the moment the ground is flat. The height of the landscape is the <strong>potential</strong>
+                <span class="tex">V(x)</span>, with</p>
+              <p class="tex-display">\dot x = f(x) = -\frac{dV}{dx}.</p>
+              <p>Valleys are stable fixed points and hilltops are unstable ones. The 3D view shows the landscape for
+                <em>every</em> value of the dial <span class="tex">r</span> at once, front to back. The highlighted slice is the
+                current <span class="tex">r</span>, and its ball is where the system is. Drag the view to turn it.
+                Click the phase line below it to drop more balls.</p>
+            </div>
+            <div id="predict-hill"></div>
+          </section>
+
+          <section id="saddle" aria-labelledby="s52">
+            <h2 id="s52">Saddle-node: a valley disappears</h2>
+            <div class="prose">
+              <p><span class="tex">\dot x = r + x^2</span>. For <span class="tex">r &lt; 0</span> there’s a valley and a hill. As
+                <span class="tex">r</span> rises they slide together, merge into a flat shelf at <span class="tex">r = 0</span>
+                (half-stable), and then there’s nothing left.</p>
+            </div>
+            <div id="predict-saddle"></div>
+            <div class="sim">
+              <canvas class="plot" id="ts-ball" role="img" aria-label="The ball's position against time"></canvas>
+              <div class="controls">
+                <button class="button" type="button" id="bottleneck-01">Release at r = 0.01</button>
+                <button class="button" type="button" id="bottleneck-04">Release at r = 0.04</button>
+              </div>
+              <p class="readout" id="bottleneck-read" aria-live="polite"></p>
+            </div>
+            <p class="aside">Just past r = 0 the valley is gone, but the ball still dawdles where it used to be: the
+              <strong>ghost</strong> of the fixed point. The smaller r is, the longer the <strong>bottleneck</strong>.</p>
+          </section>
+
+          <section id="transcritical" aria-labelledby="s53">
+            <h2 id="s53">Transcritical: two fixed points trade places</h2>
+            <div class="prose">
+              <p><span class="tex">\dot x = r x - x^2</span>. Here <span class="tex">x = 0</span> is a fixed point for every
+                <span class="tex">r</span>, so it can’t vanish. Instead, a second fixed point, at <span class="tex">x = r</span>,
+                passes through it.</p>
+            </div>
+            <div id="predict-trans"></div>
+          </section>
+
+          <section id="pitchfork" aria-labelledby="s54">
+            <h2 id="s54">Pitchfork, and tilting it</h2>
+            <div class="prose">
+              <p><span class="tex">\dot x = r x - x^3</span> is symmetric: flip <span class="tex">x \to -x</span> and nothing
+                changes. As <span class="tex">r</span> passes 0, one valley becomes two, a mirror pair.</p>
+            </div>
+            <div id="predict-pitch"></div>
+            <div class="prose">
+              <p>Real systems are never perfectly symmetric. The <strong>tilt</strong> slider adds a term
+                <span class="tex">h</span>: <span class="tex">\dot x = h + r x - x^3</span>. With any tilt at all, the pitchfork
+                breaks. One branch now joins up smoothly, and the other appears on its own through a saddle-node.</p>
+            </div>
+          </section>
+
+          <section id="hysteresis" aria-labelledby="s55">
+            <h2 id="s55">Hysteresis: the system remembers</h2>
+            <div class="prose">
+              <p><span class="tex">\dot x = r x + x^3 - x^5</span>, a <strong>subcritical</strong> pitchfork. Past
+                <span class="tex">r = 0</span> the ball doesn’t ease away from 0: it <em>jumps</em> to a far valley. Use
+                <strong>Sweep up</strong> and <strong>Sweep down</strong> and watch its path on the diagram below.</p>
+            </div>
+            <div id="predict-hyst"></div>
+            <div class="sim">
+              <canvas class="branches" id="branches"></canvas>
+              <div class="controls">
+                <button class="button quiet" type="button" id="clear-trace">Clear path</button>
+              </div>
+              <p class="caption">Solid = stable, dotted = unstable (Strogatz’s solid/dashed). The blue line is where the ball has been.</p>
+            </div>
+          </section>
+
+          <div class="layers">
+            <div data-layer="intuition">
+              <p>On the line, fixed points can only change in a few ways: a valley and a hill <em>merge and vanish</em>
+                (saddle-node), <em>pass through each other and trade stability</em> (transcritical), or one valley
+                <em>splits in two</em> (pitchfork). Everything else is one of these in disguise.</p>
+            </div>
+            <div data-layer="picture">
+              <p>Turn the 3D view to look straight down: the floor under the surface is the bifurcation diagram for
+                the current form. Stable branches run along the valley floors, and unstable branches along the ridges.</p>
+            </div>
+            <div data-layer="equation">
+              <p>The normal forms and their potentials (<span class="tex">f = -V'</span>):</p>
+              <p class="tex-display">\begin{aligned}
+                \text{saddle-node:}\ &amp; \dot x = r + x^2, &amp; V &amp;= -r x - \tfrac{x^3}{3}\\
+                \text{transcritical:}\ &amp; \dot x = r x - x^2, &amp; V &amp;= -\tfrac{r x^2}{2} + \tfrac{x^3}{3}\\
+                \text{pitchfork:}\ &amp; \dot x = r x - x^3, &amp; V &amp;= -\tfrac{r x^2}{2} + \tfrac{x^4}{4}\\
+                \text{subcritical:}\ &amp; \dot x = r x + x^3 - x^5, &amp; V &amp;= -\tfrac{r x^2}{2} - \tfrac{x^4}{4} + \tfrac{x^6}{6}
+              \end{aligned}</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="stage" aria-label="Shared simulation">
+          <div class="sim">
+            <canvas class="land" id="land"></canvas>
+            <p class="legend3d">left–right: x · front–back: r (front = larger r) · height: V · floor: fixed points for every r</p>
+            <canvas class="line" id="line" style="margin-top:var(--s-2)"></canvas>
+            <div class="controls">
+              <div class="choice" role="radiogroup" aria-label="Normal form" id="form-choice"></div>
+            </div>
+            <div class="controls" id="stage-sliders"></div>
+            <div class="controls">
+              <button class="button" type="button" id="sweep-up" data-primary>Sweep up</button>
+              <button class="button" type="button" id="sweep-down">Sweep down</button>
+              <button class="button quiet" type="button" id="stop">Stop</button>
+              <button class="button quiet" type="button" id="reset-ball">Ball to 0</button>
+            </div>
+            <p class="readout" id="stage-read" aria-live="polite"></p>
+          </div>
+        </aside>
+      </div>
+
+      <div id="lens"></div>
+    </main>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
