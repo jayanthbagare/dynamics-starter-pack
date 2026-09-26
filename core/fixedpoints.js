@@ -78,7 +78,8 @@ export function findZeros(f, [a, b], samples = 2000) {
     }
   }
 
-  const unique = roots.filter((x, i) => i === 0 || x - roots[i - 1] > h);
+  // zeros on the very edge of the range can't be classified (nothing beyond them), so drop them
+  const unique = roots.filter((x, i) => x > a + h / 2 && x < b - h / 2 && (i === 0 || x - roots[i - 1] > h));
   const eps = (b - a) * 1e-7;
   return unique.map((x) => {
     const l = Math.sign(f(x - eps)), r = Math.sign(f(x + eps));
