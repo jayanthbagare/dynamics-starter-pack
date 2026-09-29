@@ -14,7 +14,7 @@
 //   z.setDock(x | null); z.setTangent({ x, slope } | null)
 //   z.lane, z.beam, z.fleet, z.chart, z.logbook, z.store, z.world  (the layers, for zone code)
 //
-// config: { n, title, domain, rule, buoyBudget, flashEvery, laneTicks, chart: { symbols, tol },
+// config: { n, title, domain, laneScale, laneEndLabels, rule, buoyBudget, flashEvery, laneTicks, chart: { symbols, tol },
 //           ghost: { maxHops, tol }, logbook: [entries] }
 
 import { createStore } from '../../core/store.js';
@@ -117,11 +117,12 @@ export function createDiscreteZone(root, { config, progress, chapterHref, chapte
     say('This game needs WebGL, which is switched off or unavailable in this browser. The <a href="../">starter pack</a> chapters work without it.', { sticky: true });
     return null;
   }
-  const space = createLaneSpace({ domain: config.domain, K: 4 });
-  const lane = createLane(world, space, { ticks: config.laneTicks ?? [] });
+  const space = createLaneSpace({ domain: config.domain, K: config.laneScale ?? 4 });
+  const lane = createLane(world, space, { ticks: config.laneTicks ?? [], endLabels: config.laneEndLabels ?? ['−π', 'π'] });
   const beam = createCobwebBeam(world, space, { lighthouse: config.lighthouse ?? [0, -13] });
   const chartLayer = createChartLayer(world, space);
-  const rig = createCameraRig(world, { target: [0, -2], distance: 32, bounds: [[-30, 30], [-30, 20]] });
+  const midX = (space.bounds()[0] + space.bounds()[2]) / 2;
+  const rig = createCameraRig(world, { target: [midX, -2], distance: 32, bounds: [[midX - 30, midX + 30], [-30, 20]] });
 
   const store = createStore({ cursor: 0, vantage: false, paused: reducedMotion, chartStale: false });
   const fleet = createFleet({ budget: config.buoyBudget, inside: space.inside });

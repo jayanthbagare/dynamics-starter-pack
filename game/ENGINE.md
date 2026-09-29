@@ -39,6 +39,8 @@ A zone is a folder `zones/NN-name/` plus a line in `zones/index.js`
 |---|---|
 | `n`, `title` | zone number (progress key) and name |
 | `domain` | lane range, e.g. `[-Math.PI, Math.PI]` |
+| `laneScale` | world units per unit of state (default 4, which suits [−π, π]; [0, 1] wants about 20) |
+| `laneEndLabels` | labels on the two end posts (default `['−π', 'π']`) |
 | `laneTicks` | numbered posts along the lane |
 | `lighthouse` | `[x, z]` world position of the lighthouse |
 | `rule` | `{ step: (x, params) => number, params, tex }` |
@@ -77,6 +79,8 @@ beam follows: newest boat not adrift), `say(html, { sticky })`, `setChallenges(l
 (list items `{ id, title, done, active, pickable }`), `panel` (element the zone fills),
 `setDock(x|null)`, `setTangent({ x, slope }|null)`, `clearGhost()`, `checkChart()`, and the layers:
 `world, space, lane, beam, rig, fleet, chart, chartLayer, logbook, store`.
+
+The camera starts centred on the lane, whatever its domain and scale.
 
 Store keys: `cursor` (helm position), `vantage`, `paused`, `chartStale`, plus the tide key.
 Any tide change marks a non-empty chart STALE (greyed symbols, badge) and removes a revealed truth.
