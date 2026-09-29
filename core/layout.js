@@ -2,6 +2,7 @@
 //
 //   mountLayout({ chapter: 1 })   // on a chapter page
 //   mountLayout()                 // on the landing page
+//   mountLayout({ crumb: 'The Cartographer' })   // another page of the site (the game hub)
 //
 // Pages provide <div class="wrap"><main>…</main></div>; the header goes before <main> and the
 // footer after it. Links are built from this file's own URL, so they work at the domain root
@@ -27,7 +28,7 @@ export const chapters = [
 
 export const chapterURL = (c) => new URL(`chapters/${c.folder}/`, ROOT).href;
 
-export function mountLayout({ chapter = null } = {}) {
+export function mountLayout({ chapter = null, crumb = null } = {}) {
   const wrap = document.querySelector('.wrap');
   const main = wrap.querySelector('main');
   const current = chapters.find((c) => c.n === chapter);
@@ -37,6 +38,7 @@ export function mountLayout({ chapter = null } = {}) {
       <nav class="crumbs" aria-label="Site">
         <a class="brand" href="${ROOT.href}">dynamics starter pack</a>
         ${current ? `<span aria-hidden="true">/</span> <span class="crumb">Ch ${current.n}</span>` : ''}
+        ${!current && crumb ? `<span aria-hidden="true">/</span> <span class="crumb">${crumb}</span>` : ''}
       </nav>
       <button class="theme-toggle" type="button" aria-live="polite">theme: auto</button>
     </header>`);
@@ -71,7 +73,7 @@ function chapterNav(current) {
 
 // Theme: auto → light → dark → auto. "auto" follows the OS setting. Each page also carries a
 // tiny inline script in <head> that applies a saved theme before first paint.
-function initThemeToggle(btn) {
+export function initThemeToggle(btn) {
   const root = document.documentElement;
   const order = ['auto', 'light', 'dark'];
   const current = () => root.dataset.theme || 'auto';
