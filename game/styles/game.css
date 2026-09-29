@@ -1,0 +1,192 @@
+/* The Cartographer: hub and HUD. Colours come only from the site tokens in ../../styles/base.css,
+   so light and dark themes (and the theme toggle) apply here unchanged. */
+
+/* ======================================================================
+   Hub
+   ====================================================================== */
+.hub-notice {
+  max-width: var(--measure);
+  border-left: 3px solid var(--c-highlight);
+  padding-left: var(--s-3);
+}
+.world-chart svg { display: block; width: 100%; height: auto; margin-bottom: var(--s-4); }
+.world-chart .chart-sea { fill: var(--surface); stroke: var(--rule); }
+.world-chart .chart-grid { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 2 6; }
+.world-chart .chart-route { fill: none; stroke: var(--ink-muted); stroke-width: 1.5; stroke-dasharray: 5 6; }
+.world-chart .chart-route.optional { stroke-dasharray: 1 6; }
+.world-chart .compass circle { fill: none; stroke: var(--rule); }
+.world-chart .compass path { fill: var(--ink-muted); }
+.world-chart .compass text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-muted); }
+.world-chart .island-shape { fill: var(--bg); stroke: var(--ink-muted); stroke-width: 1.5; }
+.world-chart .island.live .island-shape { stroke: var(--c-trajectory); stroke-width: 2.5; }
+.world-chart a:hover .island-shape { fill: var(--surface); stroke-width: 3.5; }
+.world-chart .island.locked { opacity: 0.5; }
+.world-chart .island-num { font-family: var(--font-mono); font-size: 15px; font-weight: 600; fill: var(--ink); }
+.world-chart .island-name { font-family: var(--font-serif); font-size: 14px; fill: var(--ink); }
+.zone-card.locked { opacity: 0.7; }
+.symbol-legend svg { width: 18px; height: 18px; }
+.symbol-legend li { flex: 1 1 18rem; }
+.keys-table td:first-child { white-space: nowrap; }
+
+/* ======================================================================
+   Zone: full-screen sea with a quiet HUD over it
+   ====================================================================== */
+body.in-zone { overflow: hidden; }
+body.in-zone > .wrap { display: none; }
+
+.game { position: fixed; inset: 0; font-size: var(--fs-small); }
+.game canvas.sea { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.game canvas.sea:focus-visible { outline-offset: -4px; }
+
+.hud {
+  position: absolute;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--s-2) var(--s-3);
+  line-height: 1.45;
+}
+.hud h2, .hud h3 { font-size: 1rem; margin: 0 0 var(--s-2); }
+.hud p { margin: 0 0 var(--s-2); }
+.hud-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); margin: var(--s-2) 0; }
+.hud .button { padding: 2px var(--s-2); }
+.hud kbd { font-size: 0.75rem; }
+
+.hud-top {
+  top: var(--s-2); left: var(--s-2); right: var(--s-2);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3);
+  flex-wrap: wrap;
+}
+.hud-nav { display: flex; gap: var(--s-3); font-family: var(--font-mono); }
+.hud-nav a { text-decoration: none; }
+.zone-title { font-size: 1.125rem; margin: 0; }
+.zone-title .mono { color: var(--c-parameter); margin-right: var(--s-2); font-size: var(--fs-small); }
+.hud-buttons { display: flex; gap: var(--s-2); align-items: center; }
+.hud-buttons [aria-pressed="true"], .hud-buttons [aria-expanded="true"] { border-color: var(--c-highlight); color: var(--c-highlight); }
+
+.hud-quest {
+  top: 4.25rem; left: var(--s-2);
+  width: min(22rem, calc(100% - 2 * var(--s-2)));
+  max-height: calc(100% - 4.25rem - 15rem);
+  overflow-y: auto;
+}
+.quest-list { list-style: none; margin: 0 0 var(--s-2); padding: 0; }
+.quest-list li { display: flex; gap: var(--s-2); color: var(--ink-muted); }
+.quest-list li.active { color: var(--ink); font-weight: 600; }
+.quest-list li.done { color: var(--c-stable); }
+.quest-pick { all: unset; display: flex; gap: var(--s-2); cursor: pointer; width: 100%; }
+.quest-pick:hover span:last-child { text-decoration: underline; }
+.quest-pick:focus-visible { outline: 2px solid var(--c-highlight); outline-offset: 2px; }
+.quest-mark { font-family: var(--font-mono); width: 1em; }
+.quest-panel { border-top: 1px solid var(--rule); padding-top: var(--s-2); }
+.quest-panel .starts { font-size: 1rem; }
+.quest-panel .gaps { overflow-x: auto; white-space: nowrap; }
+.boss-call, .boss-teaser { border-top: 1px dashed var(--rule); padding-top: var(--s-2); margin-top: var(--s-2); }
+.ghost-table { border-collapse: collapse; margin: var(--s-2) 0; }
+.ghost-table caption { text-align: left; font-size: var(--fs-small); }
+.ghost-table th, .ghost-table td { text-align: left; padding: 1px var(--s-3) 1px 0; border-bottom: 1px solid var(--rule); }
+.ghost-table th { font-weight: normal; color: var(--ink-muted); font-family: var(--font-mono); }
+
+.keeper-name { font-weight: 600; display: flex; justify-content: space-between; gap: var(--s-2); }
+.keeper-line {
+  margin: 0 0 var(--s-2); padding-left: var(--s-3);
+  border-left: 3px solid var(--c-parameter);
+  font-style: italic;
+}
+.keeper-mark { max-width: none; min-width: 0; }
+
+.hud-helm {
+  bottom: var(--s-2); left: var(--s-2);
+  width: min(40rem, calc(100% - 2 * var(--s-2) - 11rem));
+}
+.helm-x { display: grid; grid-template-columns: auto 1fr 4.5rem; align-items: center; gap: var(--s-2); }
+.helm-x input { width: 100%; accent-color: var(--c-parameter); }
+.helm-x output { color: var(--c-parameter); font-weight: 600; text-align: right; }
+.helm-time .budget { margin-left: auto; }
+.tape { margin: 0; color: var(--c-trajectory); overflow-x: auto; white-space: nowrap; }
+
+.chart-tools .symbol-choice { display: flex; flex-wrap: wrap; gap: var(--s-1); margin-top: var(--s-2); }
+.symbol-choice label { position: relative; }
+.symbol-choice input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.symbol-choice span {
+  display: flex; align-items: center; gap: var(--s-1);
+  padding: 2px var(--s-2);
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  background: var(--bg); font-family: var(--font-mono);
+}
+.symbol-choice input:checked + span { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); font-weight: 600; }
+.symbol-choice input:focus-visible + span { outline: 2px solid var(--c-highlight); outline-offset: 1px; }
+.chart-status p { margin: 0; }
+.chart-status svg { vertical-align: -2px; }
+
+.hud-tide { bottom: var(--s-2); right: var(--s-2); width: 10.5rem; text-align: center; }
+.tide-wheel .dial { width: 8.5rem; height: 8.5rem; display: block; margin: 0 auto; cursor: grab; touch-action: none; }
+.tide-wheel .dial:focus-visible { outline: 2px solid var(--c-highlight); border-radius: 50%; }
+.dial-track { fill: none; stroke: var(--rule); stroke-width: 3; }
+.dial-rim { fill: none; stroke: var(--c-parameter); stroke-width: 3; }
+.dial-spoke { stroke: var(--c-parameter); stroke-width: 2.5; stroke-linecap: round; }
+.dial-hub { fill: var(--c-parameter); }
+.dial-handle { fill: var(--bg); stroke: var(--c-parameter); stroke-width: 2.5; }
+.dial-end { font-family: var(--font-mono); font-size: 9px; fill: var(--ink-muted); text-anchor: middle; }
+.dial-mark.guess { fill: var(--bg); stroke: var(--c-highlight); stroke-width: 2; }
+.dial-mark.truth { fill: var(--ink); stroke: var(--ink); stroke-width: 1; }
+.tide-readout { display: flex; justify-content: center; align-items: baseline; gap: var(--s-2); flex-wrap: wrap; }
+.tide-readout output { color: var(--c-parameter); font-weight: 600; }
+
+.hud-toast {
+  position: absolute; top: 4.25rem; left: 50%; transform: translateX(-50%);
+  max-width: min(32rem, calc(100% - 26rem));
+  margin: 0; padding: var(--s-2) var(--s-3);
+  background: var(--ink); color: var(--bg);
+  border-radius: var(--radius);
+}
+.hud-toast a { color: inherit; }
+.hud-toast kbd { border-color: var(--ink-muted); }
+.hud-toast:empty { display: none; }
+
+.hud-keys {
+  position: absolute; top: 4.25rem; right: var(--s-2); margin: 0;
+  max-width: 17rem; text-align: right; font-size: 0.75rem;
+}
+.stale-badge {
+  position: absolute; top: 8rem; right: var(--s-2); margin: 0;
+  max-width: 17rem; padding: var(--s-2) var(--s-3);
+  background: var(--bg); border: 2px dashed var(--c-highlight); border-radius: var(--radius);
+}
+.stale-badge strong { letter-spacing: 0.08em; margin-right: var(--s-1); }
+
+.logbook {
+  position: absolute; top: 4.25rem; right: var(--s-2); bottom: var(--s-2); z-index: 5;
+  width: min(30rem, calc(100% - 2 * var(--s-2)));
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--rule); border-top: 3px solid var(--ink);
+  border-radius: var(--radius);
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--fs-base);
+}
+.logbook-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-3); }
+.logbook-head h2 { margin: 0; }
+.logbook-levels { margin: var(--s-3) 0; }
+.logbook h3 { font-size: 1.0625rem; margin: var(--s-4) 0 var(--s-2); }
+.log-chart h3 { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; font-size: var(--fs-small); color: var(--ink-muted); }
+.log-chart-list { list-style: none; padding: 0; }
+.log-chart-list li { margin-bottom: var(--s-2); }
+.log-chart-list svg { vertical-align: -2px; }
+.log-entry { border-top: 1px solid var(--rule); }
+.log-entry.locked h3 { letter-spacing: 0.3em; }
+.log-links { display: flex; flex-wrap: wrap; gap: var(--s-3); font-size: var(--fs-small); }
+.log-links a::after { content: ' ↗'; }
+
+.game.no-webgl canvas.sea { visibility: hidden; }
+.game.no-webgl .hud-toast { top: 40%; max-width: 30rem; }
+
+/* narrow screens: stack the panels instead of floating them */
+@media (max-width: 52rem) {
+  .game { overflow-y: auto; }
+  .hud-keys { display: none; }
+  .hud-toast { left: var(--s-2); right: var(--s-2); transform: none; max-width: none; z-index: 4; }
+  .hud-quest { max-height: 30vh; }
+  .hud-helm { width: calc(100% - 2 * var(--s-2)); bottom: 11.5rem; }
+  .hud-tide { bottom: var(--s-2); }
+}
