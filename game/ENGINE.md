@@ -158,10 +158,19 @@ which for a plane should return `[x, y]`.
   `stopPropagation()`, or the camera ship moves too.
 - **Updating per flash.** Re-rendering `z.panel` on every `flash` steals keyboard focus. Update the
   live numbers in place, and re-render only when the panel's content changes.
+- **Zone-only 3D.** A zone may add its own three.js objects: import `THREE` and `WATER` from
+  `render/scene.js`, shapes from `render/shapes.js`, symbols from `render/symbols.js`, colour every
+  material through `z.world.paint(mat, role)`, add to `z.world.scene`, and remove with
+  `z.world.discard`. Zone 3's bifurcation diagram (`reef-diagram.js`) works this way. Reframe the
+  vantage from the `vantage` event (`z.rig.frame(rect)`); move the ship with `z.rig.state` + `z.rig.zoom(1)`.
+- **Tide readout precision.** `enableTide` doesn't pass a `format` to the wheel, so it shows 2
+  decimals. Zone 3 writes 4 decimals into `z.tideWheel.el.querySelector('output')` from its `tide`
+  handler (which runs after the wheel's own update). A one-line engine change (forward `format`)
+  would retire this; proposed, not approved.
 - **Zone maths.** Pure, zone-only calculations live in the zone folder with their own
   `*.test.js` (Zone 2: `twins.js`); `npm test` picks them up.
 
 ## Tests
 
 `npm test` or `node --test "game/**/*.test.js"`. `sim/maps.test.js`, `pedagogy/chart-grading.test.js`,
-`pedagogy/predict-score.test.js` (also covers `progress.js`), and per zone `zones/02-twin-fleets/twins.test.js`.
+`pedagogy/predict-score.test.js` (also covers `progress.js`), and per zone `zones/02-twin-fleets/twins.test.js`, `zones/03-splitting-reef/cascade.test.js`.
