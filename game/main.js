@@ -22,6 +22,6 @@ if (zone?.live) {
   const { renderHub } = await import('./hub.js');
   renderHub(document.getElementById('hub'), {
     zones, progress, chapterHref, chapterTitle,
-    notice: key ? (zone ? `${zone.title} isn’t charted yet. Zone 1 is open.` : `There is no zone “${key}”. Pick one from the chart.`) : null,
+    notice: key ? (zone ? `${zone.title} isn’t charted yet. Pick an open zone from the chart.` : `There is no zone “${key}”. Pick one from the chart.`) : null,
   });
 }

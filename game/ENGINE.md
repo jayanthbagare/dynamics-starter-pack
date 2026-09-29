@@ -148,7 +148,20 @@ which for a plane should return `[x, y]`.
 - `logbook.js`: `createLogbook(host, { zone, progress, entries, chapterHref, chapterTitle, annotate, onToggle })`
   → `open`, `close`, `toggle`, `unlock(id)`, `has(id)`, `refresh()`, `level`. Level is a global pref.
 
+## Patterns zones use (no engine API of their own)
+
+- **Exact starts.** `z.drop(x0)` rounds to 4 decimals (clicks and the helm don't need more). A zone
+  that needs exact starts, such as twins 1e-7 apart in Zone 2, calls `z.fleet.drop(x0)` directly; the
+  harness draws every boat in the fleet. Such drops don't emit `drop`.
+- **Widgets in the panel.** Zone-only plots and inputs are SVG built by the zone inside `z.panel`
+  (Zone 2: `plots.js`). Colour them with `var(--…)` tokens. A widget that handles arrow keys must
+  `stopPropagation()`, or the camera ship moves too.
+- **Updating per flash.** Re-rendering `z.panel` on every `flash` steals keyboard focus. Update the
+  live numbers in place, and re-render only when the panel's content changes.
+- **Zone maths.** Pure, zone-only calculations live in the zone folder with their own
+  `*.test.js` (Zone 2: `twins.js`); `npm test` picks them up.
+
 ## Tests
 
 `npm test` or `node --test "game/**/*.test.js"`. `sim/maps.test.js`, `pedagogy/chart-grading.test.js`,
-`pedagogy/predict-score.test.js` (also covers `progress.js`).
+`pedagogy/predict-score.test.js` (also covers `progress.js`), and per zone `zones/02-twin-fleets/twins.test.js`.
